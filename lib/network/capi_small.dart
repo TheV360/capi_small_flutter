@@ -17,7 +17,6 @@ Future<String> fetchToken(String username, String password) async {
     Uri.parse('$capiSmallUri/login' '?username=$username&password=$password'),
   );
 
-  await Future.delayed(const Duration(seconds: 2));
   if (response.statusCode == 200) {
     return response.body;
   } else if (response.statusCode == 400) {
@@ -41,6 +40,9 @@ Future<List<CapiSmall>> fetchSearch(
   String query, {
   String? token,
 }) async {
+  // be nice to api and don't let it spill out every single page ever made
+  if (query.isEmpty) return [];
+
   final response = await http.get(
     Uri.parse('$capiSmallUri/search' '?search=%25$query%25'),
     headers: (token != null)
@@ -50,7 +52,6 @@ Future<List<CapiSmall>> fetchSearch(
         : null,
   );
 
-  await Future.delayed(const Duration(seconds: 2));
   if (response.statusCode == 200) {
     return CapiSmall.fromCsv(response.body);
   } else {

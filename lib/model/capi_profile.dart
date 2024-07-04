@@ -1,5 +1,3 @@
-import 'package:capi_small_mvp/csv_parser.dart';
-
 class CapiProfile {
   final int id;
   final String username;

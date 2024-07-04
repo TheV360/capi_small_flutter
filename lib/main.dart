@@ -6,21 +6,6 @@ void main() {
   runApp(const MainApp());
 }
 
-class AuthToken with ChangeNotifier {
-  String? _token;
-
-  String? get token => _token;
-  set token(String? value) {
-    if (_token == value) return;
-    if (_token != null && _token!.isEmpty) {
-      throw const FormatException('fuuck');
-    }
-
-    _token = value;
-    notifyListeners();
-  }
-}
-
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
