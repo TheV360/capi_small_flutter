@@ -18,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final Future<CapiProfile> profile;
-  final List<RoomItem> roomHistory = [];
+  final List<Room> roomHistory = [];
   // final SearchController searchController = SearchController();
 
   @override
@@ -32,11 +32,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: SearchAnchor.bar(
+          barElevation: const WidgetStatePropertyAll(0.0),
+          barHintText: 'Find a room',
           // searchController: searchController,
           suggestionsBuilder: (context, controller) async {
             final query = controller.text;
-            final results = (await fetchSearch(query, token: widget.token))
-                .map(RoomItem.fromSmall);
+            final results =
+                (await fetchSearch(query, token: widget.token)).map((r) {
+              final i = Room.fromSmall(r);
+              return ListTile(
+                leading: i.isPublic
+                    ? const Icon(Icons.groups_2)
+                    : const Icon(Icons.group),
+                title:
+                    Text(i.name.isNotEmpty ? i.name : '(Untitled room $i.id)'),
+                subtitle: Text('${i.isPublic ? 'Public' : 'Private'} room'),
+                onTap: () {
+                  setState(() => roomHistory.add(i));
+                },
+              );
+            });
             return results;
           },
         ),
@@ -76,40 +91,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body:
-          Placeholder(), /*FutureBuilder(
-        future: searchResults,
-        builder: (context, snapshot) {
-          return CustomScrollView(
-            slivers: <Widget>[
-              if (snapshot.hasData && snapshot.data!.isNotEmpty)
-                SliverList.list(
-                  children: snapshot.data!
-                      .map(RoomItem.fromSmall)
-                      .where((i) => i.name.isNotEmpty)
-                      .toList(),
-                )
-              else if (snapshot.hasData && snapshot.data!.isEmpty)
-                const SliverFillRemaining(
-                  child: Center(child: Text('Got nothing!')),
-                )
-              else if (snapshot.hasError)
-                SliverFillRemaining(
-                  child: Center(
-                    child: ListTile(
-                      leading: const Icon(Icons.error),
-                      title: const Text('Failed!'),
-                      subtitle: Text(snapshot.error.toString()),
-                    ),
-                  ),
-                )
-              else
-                const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator())),
-            ],
-          );
-        },
-      ),*/
+      body: ListView(
+        children: roomHistory
+            .map((i) => ListTile(
+                  leading: i.isPublic
+                      ? const Icon(Icons.groups_2)
+                      : const Icon(Icons.group),
+                  title: Text(
+                      i.name.isNotEmpty ? i.name : '(Untitled room $i.id)'),
+                  subtitle: Text('${i.isPublic ? 'Public' : 'Private'} room'),
+                  onTap: () {},
+                ))
+            .toList(),
+      ),
     );
   }
 }
