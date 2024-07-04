@@ -1,6 +1,7 @@
+import 'package:capi_small_mvp/model/capi_profile.dart';
 import 'package:capi_small_mvp/model/capi_small.dart';
 import 'package:capi_small_mvp/network/capi_small.dart';
-import 'package:capi_small_mvp/widgets/room.dart';
+import 'package:capi_small_mvp/widgets/room_selector.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,11 +17,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final Future<List<CapiSmall>> rooms;
+  late final Future<CapiProfile> profile;
   final SearchController searchController = SearchController();
 
   @override
   void initState() {
     super.initState();
+    profile = fetchMe(token: widget.token);
     rooms = fetchSearch('', token: widget.token);
   }
 
@@ -35,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _sliverAppBar(),
               if (snapshot.hasData && snapshot.data!.isNotEmpty)
                 SliverList.list(
-                  children: snapshot.data!.map((r) => Room(inner: r)).toList(),
+                  children: snapshot.data!.map(RoomItem.fromSmall).toList(),
                 )
               else if (snapshot.hasData && snapshot.data!.isEmpty)
                 const SliverFillRemaining(
@@ -71,9 +74,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         IconButton(
           onPressed: () {},
-          icon: const CircleAvatar(
-            backgroundColor: Colors.black26,
-            child: Text('Vi', style: TextStyle(color: Colors.white)),
+          icon: FutureBuilder(
+            future: profile,
+            builder: (context, snapshot) => CircleAvatar(
+              backgroundImage: snapshot.hasData
+                  ? NetworkImage(getPathToImage(snapshot.data!.avatar))
+                  : null,
+            ),
           ),
         ),
       ],
