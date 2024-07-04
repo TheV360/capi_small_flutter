@@ -56,33 +56,31 @@ class CapiSmall {
     required this.messageId,
   });
 
-  factory CapiSmall.fromCsvRow(List<String> row) {
-    return switch (row) {
-      [
-        String pageName,
-        String userName,
-        String message,
-        String postedAt,
-        String module,
-        String state,
-        String pageId,
-        String userId,
-        String messageId,
-      ] =>
-        CapiSmall(
-          pageName: pageName,
-          userName: userName,
-          message: message,
-          postedAt: DateTime.tryParse(postedAt),
-          module: module,
-          state: CapiSmallState.parse(state),
-          pageId: int.parse(pageId),
-          userId: int.tryParse(userId),
-          messageId: int.tryParse(messageId),
-        ),
-      _ => throw const FormatException("not to code"),
-    };
-  }
+  factory CapiSmall.fromCsvRow(List<String> row) => switch (row) {
+        [
+          String pageName,
+          String userName,
+          String message,
+          String postedAt,
+          String module,
+          String state,
+          String pageId,
+          String userId,
+          String messageId,
+        ] =>
+          CapiSmall(
+            pageName: pageName,
+            userName: userName,
+            message: message,
+            postedAt: DateTime.tryParse(postedAt),
+            module: module,
+            state: CapiSmallState.parse(state),
+            pageId: int.parse(pageId),
+            userId: int.tryParse(userId),
+            messageId: int.tryParse(messageId),
+          ),
+        _ => throw const FormatException("not to code"),
+      };
 
   static List<CapiSmall> fromCsv(String text) {
     return parseCsv(text).map((row) => CapiSmall.fromCsvRow(row)).toList();

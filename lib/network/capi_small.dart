@@ -1,5 +1,7 @@
 import 'package:http/http.dart' as http;
 
+import 'package:capi_small_mvp/csv_parser.dart';
+import 'package:capi_small_mvp/model/capi_profile.dart';
 import 'package:capi_small_mvp/model/capi_small.dart';
 
 const capiBaseUri = "http://localhost:5147";
@@ -10,20 +12,12 @@ class UserNotFoundException implements Exception {}
 /// For times where you're gonna need to log in again.
 class AuthorizationException implements Exception {}
 
-Future<String> fetchToken(
-  String username,
-  String password, {
-  String? token,
-}) async {
+Future<String> fetchToken(String username, String password) async {
   final response = await http.get(
     Uri.parse('$capiSmallUri/login' '?username=$username&password=$password'),
-    headers: (token != null)
-        ? {
-            'Authorization': 'Bearer $token',
-          }
-        : null,
   );
 
+  await Future.delayed(const Duration(seconds: 2));
   if (response.statusCode == 200) {
     return response.body;
   } else if (response.statusCode == 400) {
@@ -63,3 +57,22 @@ Future<List<CapiSmall>> fetchSearch(
     throw Exception("failed to load");
   }
 }
+
+Future<CapiProfile> fetchMe({required String token}) async {
+  final response = await http.get(Uri.parse('$capiSmallUri/me'), headers: {
+    'Authorization': 'Bearer $token',
+  });
+
+  if (response.statusCode == 200) {
+    final body = response.body.trim();
+    return switch (parseCsv(body)) {
+      [List<String> me] => CapiProfile.fromCsvRow(me),
+      _ => throw Exception("invalid /small/me response"),
+    };
+  } else {
+    throw Exception("failed to fetch self");
+  }
+}
+
+String getPathToImage(String hash) =>
+    '$capiBaseUri/api/file/raw/$hash?size=100&crop=true';
