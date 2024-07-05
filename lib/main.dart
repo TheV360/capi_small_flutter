@@ -1,6 +1,10 @@
+import 'package:flutter/material.dart';
+
+import 'package:provider/provider.dart';
+
+import 'package:capi_small_mvp/network/capi_small.dart';
 import 'package:capi_small_mvp/screens/home_screen.dart';
 import 'package:capi_small_mvp/screens/login_screen.dart';
-import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MainApp());
@@ -16,14 +20,17 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: HomeScreen.appName,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
+    return Provider<CapiClient>(
+      create: (context) => CapiClient('http://localhost:5147'),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: HomeScreen.appName,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          useMaterial3: true,
+        ),
+        home: const LoginScreen(),
       ),
-      home: const LoginScreen(),
     );
   }
 }

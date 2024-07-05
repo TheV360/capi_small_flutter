@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
+
+import 'package:provider/provider.dart';
+
 import 'package:capi_small_mvp/network/capi_small.dart';
 import 'package:capi_small_mvp/screens/home_screen.dart';
-import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,11 +34,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text;
 
     try {
-      final token = await fetchToken(username, password);
+      // token is saved in the state of CapiClient.
+      await Provider.of<CapiClient>(context, listen: false)
+          .fetchToken(username, password);
+
       if (!mounted) return; // -> can't really do anything..
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(token: token)),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } on UserNotFoundException {
       showSnackBarMessage(const SnackBar(content: Text('User not found.')));
