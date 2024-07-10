@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-import 'package:capi_small_mvp/network/capi_small.dart';
+import 'package:capi_small_mvp/network/capi_client.dart';
 import 'package:capi_small_mvp/screens/home_screen.dart';
 import 'package:capi_small_mvp/screens/login_screen.dart';
 

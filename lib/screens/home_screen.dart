@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:capi_small_mvp/model/capi_profile.dart';
-import 'package:capi_small_mvp/network/capi_small.dart';
+import 'package:capi_small_mvp/network/capi_client.dart';
 import 'package:capi_small_mvp/screens/login_screen.dart';
+import 'package:capi_small_mvp/widgets/compose_box.dart';
 import 'package:capi_small_mvp/widgets/room_chat.dart';
 import 'package:capi_small_mvp/widgets/room_search.dart';
 import 'package:capi_small_mvp/widgets/room_selector.dart';
@@ -36,10 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<RoomSelection>(
-            create: (context) => RoomSelection()),
+        ChangeNotifierProvider(create: (context) => RoomSelection()),
+        // Provider(
+        //   create: (context) => ,
+        // ),
       ],
-      child: Scaffold(
+      builder: (context, child) => Scaffold(
         appBar: AppBar(
           title: const RoomSearch(),
           actions: [
@@ -82,19 +85,35 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: const SafeArea(
+        body: SafeArea(
           child: Row(children: [
-            Flexible(
+            const Flexible(
               flex: 1,
               child: RoomPicker(),
             ),
             Flexible(
               flex: 2,
-              child:
-                  RoomChat(), /* StreamProvider(
+              child: Consumer<RoomSelection>(
+                builder: (context, selection, _) => selection.selectedRoom ==
+                        null
+                    ? const Center(child: Text("No room has been selected."))
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: RoomChat(
+                              key: ValueKey(selection.selectedRoom!.id),
+                              room: selection.selectedRoom!,
+                            ),
+                          ),
+                          if (!selection.selectedRoom!.isReadOnly)
+                            const ComposeBox(),
+                        ],
+                      ),
+                /* StreamProvider(
                 create: (context) {},
                 builder: (context, child) => ,
               ),*/
+              ),
             ),
           ]),
         ),

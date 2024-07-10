@@ -1,6 +1,6 @@
 import 'dart:async';
 
-const Duration debounceDuration = Duration(milliseconds: 250);
+const Duration debounceDuration = Duration(milliseconds: 300);
 
 typedef Debounceable<S, T> = Future<S?> Function(T parameter);
 

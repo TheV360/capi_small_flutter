@@ -40,7 +40,7 @@ class CapiSmall {
   final DateTime? postedAt;
   final String module;
   final CapiSmallState state;
-  final int pageId;
+  final int? pageId;
   final int? userId;
   final int? messageId;
 
@@ -75,7 +75,7 @@ class CapiSmall {
             postedAt: DateTime.tryParse(postedAt),
             module: module,
             state: CapiSmallState.parse(state),
-            pageId: int.parse(pageId),
+            pageId: int.tryParse(pageId),
             userId: int.tryParse(userId),
             messageId: int.tryParse(messageId),
           ),

@@ -26,12 +26,15 @@ class CapiClient {
 
   Future<void> fetchToken(String username, String password) async {
     final response = await client.get(
-      Uri.parse('$_smallUri/login' '?username=$username&password=$password'),
+      Uri.parse('$_smallUri/login'
+          '?username=${Uri.encodeQueryComponent(username)}'
+          '&password=${Uri.encodeQueryComponent(password)}'),
     );
 
     final passwordRegExp = RegExp(r'Password', caseSensitive: false);
     final userRegExp = RegExp(r'User', caseSensitive: false);
 
+    await Future.delayed(const Duration(milliseconds: 300));
     tokenWithBearer = switch (response.statusCode) {
       200 => 'Bearer ${response.body}',
       400 when response.body.contains(passwordRegExp) =>
@@ -46,11 +49,13 @@ class CapiClient {
     tokenWithBearer = null;
   }
 
-  Future<List<CapiSmall>> fetchSearchByName(String query) async {
+  Future<List<CapiSmall>> fetchSearchByName(String name) async {
     // be nice to api and don't let it spill out every single page ever made
-    if (query.isEmpty) return [];
+    if (name.isEmpty) return [];
 
-    final response = await http.get(
+    final query = Uri.encodeComponent(name);
+
+    final response = await client.get(
       Uri.parse('$_smallUri/search' '?search=%25$query%25'),
       headers: _authHeader,
     );
@@ -62,7 +67,7 @@ class CapiClient {
   }
 
   Future<List<CapiSmall>> fetchSearchById(int id) async {
-    final response = await http.get(
+    final response = await client.get(
       Uri.parse('$_smallUri/search' '?id=$id'),
       headers: _authHeader,
     );
@@ -74,7 +79,7 @@ class CapiClient {
   }
 
   Future<CapiProfile> fetchMe() async {
-    final response = await http.get(
+    final response = await client.get(
       Uri.parse('$_smallUri/me'),
       headers: _authHeader,
     );
@@ -100,7 +105,8 @@ class CapiClient {
         '?rooms=${roomIds.join(',')}'
         '&mid=$lastMessageId'
         '&get=$getMessages');
-    final response = await http.get(uri, headers: _authHeader);
+    final response = await client.get(uri, headers: _authHeader);
+    print(response.body);
 
     return switch (response.statusCode) {
       200 => CapiSmall.fromCsv(response.body),
@@ -128,5 +134,22 @@ class CapiClient {
       }
       messagesLength = 30;
     }
+  }
+
+  Future<void> postInChat({
+    required int roomId,
+    required String message,
+    String markup = '12y2',
+    String? avatar,
+  }) async {
+    final uri = Uri.parse([
+      '$_smallUri/post/$roomId',
+      '?values[m]=$markup',
+      if (avatar != null) '&values[a]=$avatar',
+      '&message=${Uri.encodeComponent(message)}',
+    ].join());
+    print(uri);
+    final response = await client.get(uri, headers: _authHeader);
+    if (response.statusCode != 200) throw Exception();
   }
 }
