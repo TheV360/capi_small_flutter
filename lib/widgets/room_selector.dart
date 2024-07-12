@@ -23,6 +23,17 @@ class Room {
         isPublic: small.state.publicallyViewable,
         isReadOnly: !small.state.userCanPostInRoom,
       );
+
+  Icon getRoomIcon() => switch ((isPublic, isReadOnly)) {
+        (_, true) => const Icon(Icons.newspaper),
+        (true, false) => const Icon(Icons.groups_2),
+        (false, false) => const Icon(Icons.group),
+      };
+  String describeRoomType() => [
+        isPublic ? 'Public' : 'Private',
+        if (isReadOnly) 'Read-Only',
+        'Room'
+      ].join(' ');
 }
 
 class RoomSelection extends ChangeNotifier {
@@ -40,8 +51,8 @@ class RoomSelection extends ChangeNotifier {
   }
 }
 
-class RoomPicker extends StatelessWidget {
-  const RoomPicker({super.key});
+class RoomSelector extends StatelessWidget {
+  const RoomSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -60,22 +71,14 @@ class RoomPicker extends StatelessWidget {
               )
             : ListView(
                 children: value.rooms
-                    .map((i) => ListTile(
-                          leading: switch ((i.isPublic, i.isReadOnly)) {
-                            (_, true) => const Icon(Icons.newspaper),
-                            (true, false) => const Icon(Icons.groups_2),
-                            (false, false) => const Icon(Icons.group),
-                          },
-                          title: Text(i.name.isNotEmpty
-                              ? i.name
-                              : '(Untitled room ${i.id})'),
-                          subtitle: Text([
-                            i.isPublic ? 'Public' : 'Private',
-                            if (i.isReadOnly) 'Read-Only',
-                            'Room'
-                          ].join(' ')),
-                          onTap: () => value.selectRoom(i),
-                          selected: value.selectedRoom?.id == i.id,
+                    .map((room) => ListTile(
+                          leading: room.getRoomIcon(),
+                          title: Text(room.name.isNotEmpty
+                              ? room.name
+                              : '(Untitled room ${room.id})'),
+                          subtitle: Text(room.describeRoomType()),
+                          onTap: () => value.selectRoom(room),
+                          selected: value.selectedRoom?.id == room.id,
                           selectedTileColor: Theme.of(context).highlightColor,
                         ))
                     .toList(),

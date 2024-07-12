@@ -24,7 +24,7 @@ class _RoomChatState extends State<RoomChat> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    chatStream = Provider.of<CapiClient>(context).streamChat(
+    chatStream = context.read<CapiClient>().streamChat(
       roomIds: [widget.room.id],
     ).where((event) => event.messageId != null);
     uiStuff();

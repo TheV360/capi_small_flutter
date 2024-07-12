@@ -15,8 +15,8 @@ class _ComposeBoxState extends State<ComposeBox> {
   bool sending = false; // sorry lol
 
   Future<void> _sendMessage() async {
-    final client = Provider.of<CapiClient>(context, listen: false);
-    final room = Provider.of<RoomSelection>(context, listen: false);
+    final client = context.read<CapiClient>();
+    final room = context.read<RoomSelection>();
 
     final message = textEditingController.text;
 

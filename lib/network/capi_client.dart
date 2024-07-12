@@ -10,22 +10,32 @@ class UserNotFoundException implements Exception {}
 class AuthorizationException implements Exception {}
 
 class CapiClient {
-  String baseUri;
-  http.Client client;
-  String? tokenWithBearer;
+  final http.Client _client;
+  String _baseUri;
+  String? _tokenWithBearer;
 
-  bool isLoggedIn() => tokenWithBearer != null;
+  bool isLoggedIn() => _tokenWithBearer != null;
   String getPathToImage(String hash) =>
-      '$baseUri/api/file/raw/$hash?size=100&crop=true';
+      '$_baseUri/api/file/raw/$hash?size=100&crop=true';
 
-  get _smallUri => "$baseUri/api/small";
+  String get baseUri => _baseUri;
+  set baseUri(String value) {
+    if (value == _baseUri) return;
+
+    _tokenWithBearer = null;
+    _baseUri = value;
+  }
+
+  get _smallUri => "$_baseUri/api/small";
   Map<String, String>? get _authHeader =>
-      tokenWithBearer != null ? {'Authorization': tokenWithBearer!} : null;
+      _tokenWithBearer != null ? {'Authorization': _tokenWithBearer!} : null;
 
-  CapiClient(this.baseUri) : client = http.Client();
+  CapiClient(this._baseUri) : _client = http.Client();
+
+  void dispose() => _client.close();
 
   Future<void> fetchToken(String username, String password) async {
-    final response = await client.get(
+    final response = await _client.get(
       Uri.parse('$_smallUri/login'
           '?username=${Uri.encodeQueryComponent(username)}'
           '&password=${Uri.encodeQueryComponent(password)}'),
@@ -35,7 +45,7 @@ class CapiClient {
     final userRegExp = RegExp(r'User', caseSensitive: false);
 
     await Future.delayed(const Duration(milliseconds: 300));
-    tokenWithBearer = switch (response.statusCode) {
+    _tokenWithBearer = switch (response.statusCode) {
       200 => 'Bearer ${response.body}',
       400 when response.body.contains(passwordRegExp) =>
         throw AuthorizationException(),
@@ -46,7 +56,7 @@ class CapiClient {
   }
 
   void forgetToken() {
-    tokenWithBearer = null;
+    _tokenWithBearer = null;
   }
 
   Future<List<CapiSmall>> fetchSearchByName(String name) async {
@@ -55,7 +65,7 @@ class CapiClient {
 
     final query = Uri.encodeComponent(name);
 
-    final response = await client.get(
+    final response = await _client.get(
       Uri.parse('$_smallUri/search' '?search=%25$query%25'),
       headers: _authHeader,
     );
@@ -67,7 +77,7 @@ class CapiClient {
   }
 
   Future<List<CapiSmall>> fetchSearchById(int id) async {
-    final response = await client.get(
+    final response = await _client.get(
       Uri.parse('$_smallUri/search' '?id=$id'),
       headers: _authHeader,
     );
@@ -79,7 +89,7 @@ class CapiClient {
   }
 
   Future<CapiProfile> fetchMe() async {
-    final response = await client.get(
+    final response = await _client.get(
       Uri.parse('$_smallUri/me'),
       headers: _authHeader,
     );
@@ -105,8 +115,8 @@ class CapiClient {
         '?rooms=${roomIds.join(',')}'
         '&mid=$lastMessageId'
         '&get=$getMessages');
-    final response = await client.get(uri, headers: _authHeader);
-    print(response.body);
+    final response = await _client.get(uri, headers: _authHeader);
+    // print(response.body);
 
     return switch (response.statusCode) {
       200 => CapiSmall.fromCsv(response.body),
@@ -148,8 +158,8 @@ class CapiClient {
       if (avatar != null) '&values[a]=$avatar',
       '&message=${Uri.encodeComponent(message)}',
     ].join());
-    print(uri);
-    final response = await client.get(uri, headers: _authHeader);
+    // print(uri);
+    final response = await _client.get(uri, headers: _authHeader);
     if (response.statusCode != 200) throw Exception();
   }
 }

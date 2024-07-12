@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _inProgress = false;
 
-  void showSnackBarMessage(SnackBar the) {
+  void _showSnackBarMessage(SnackBar the) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..removeCurrentSnackBar()
@@ -35,8 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // token is saved in the state of CapiClient.
-      await Provider.of<CapiClient>(context, listen: false)
-          .fetchToken(username, password);
+      await context.read<CapiClient>().fetchToken(username, password);
 
       if (!mounted) return; // -> can't really do anything..
 
@@ -44,23 +43,25 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
-    } on UserNotFoundException {
-      showSnackBarMessage(const SnackBar(content: Text('User not found.')));
-    } on AuthorizationException {
-      showSnackBarMessage(const SnackBar(content: Text('Wrong password.')));
     } catch (other) {
-      showSnackBarMessage(SnackBar(
-        content: const Text('Unknown error.'),
-        action: SnackBarAction(
-          label: 'Details',
-          onPressed: () => showDialog(
-            context: context,
-            builder: (context) => Dialog(
-              child: Text(other.toString()),
+      _showSnackBarMessage(switch (other) {
+        UserNotFoundException _ =>
+          const SnackBar(content: Text('User not found.')),
+        AuthorizationException _ =>
+          const SnackBar(content: Text('Wrong password.')),
+        _ => SnackBar(
+            content: const Text('Unknown error.'),
+            action: SnackBarAction(
+              label: 'Details',
+              onPressed: () => showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Text(other.toString()),
+                ),
+              ),
             ),
           ),
-        ),
-      ));
+      });
     }
 
     setState(() => _inProgress = false);

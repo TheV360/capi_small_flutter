@@ -21,16 +21,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final Future<CapiProfile> profile;
+  late final CapiClient _client;
 
   @override
   void initState() {
     super.initState();
+    _client = context.read<CapiClient>();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    profile = Provider.of<CapiClient>(context).fetchMe();
+    profile = _client.fetchMe();
   }
 
   @override
@@ -52,8 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   leadingIcon: const Icon(Icons.logout),
                   child: const Text('Log out'),
                   onPressed: () {
-                    Provider.of<CapiClient>(context, listen: false)
-                        .forgetToken();
+                    _client.forgetToken();
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -69,8 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: snapshot.hasData ? snapshot.data!.username : null,
                   icon: CircleAvatar(
                     backgroundImage: snapshot.hasData
-                        ? NetworkImage(Provider.of<CapiClient>(context)
-                            .getPathToImage(snapshot.data!.avatar))
+                        ? NetworkImage(
+                            _client.getPathToImage(snapshot.data!.avatar))
                         : null,
                   ),
                   onPressed: () {
@@ -89,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(children: [
             const Flexible(
               flex: 1,
-              child: RoomPicker(),
+              child: RoomSelector(),
             ),
             Flexible(
               flex: 2,

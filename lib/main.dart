@@ -21,7 +21,8 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return Provider<CapiClient>(
-      create: (context) => CapiClient('http://localhost:5147'),
+      create: (_) => CapiClient('http://localhost:5147'),
+      dispose: (_, value) => value.dispose(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: HomeScreen.appName,

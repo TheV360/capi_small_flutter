@@ -20,10 +20,10 @@ class _RoomSearchState extends State<RoomSearch> {
   List<CapiSmall> _lastResults = [];
 
   Future<List<CapiSmall>?> _search(String text) async {
-    final client = Provider.of<CapiClient>(context, listen: false);
+    final client = context.read<CapiClient>();
     final query = text.trim();
     _runningQuery = query;
-    print("starting query '$query'");
+    // print("starting query '$query'");
     final int? roomId = switch (RegExp(r'^#(\d+)$').firstMatch(query)) {
       final match? => int.tryParse(match.group(1) ?? ''),
       _ => null,
@@ -31,10 +31,10 @@ class _RoomSearchState extends State<RoomSearch> {
     final results = await (roomId == null
         ? client.fetchSearchByName(query)
         : client.fetchSearchById(roomId));
-    print("done with query '$query'");
+    // print("done with query '$query'");
     if (query != _runningQuery) {
       // oops! took too long and the user wrote something else. sucks to suck
-      print("throwing away query '$query'");
+      // print("throwing away query '$query'");
       return null;
     }
     return results;
@@ -57,13 +57,11 @@ class _RoomSearchState extends State<RoomSearch> {
           final freshResults = await _debouncedSearch(controller.text);
           _lastResults = freshResults ?? _lastResults;
           return _lastResults.map(Room.fromSmall).map((room) => ListTile(
-                leading: room.isPublic
-                    ? const Icon(Icons.groups_2)
-                    : const Icon(Icons.group),
+                leading: room.getRoomIcon(),
                 title: Text(room.name.isNotEmpty
                     ? room.name
                     : '(Untitled room ${room.id})'),
-                subtitle: Text('${room.isPublic ? 'Public' : 'Private'} room'),
+                subtitle: Text(room.describeRoomType()),
                 onTap: () {
                   selection.selectRoom(room);
                   controller.closeView(null);
