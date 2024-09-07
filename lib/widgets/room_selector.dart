@@ -36,7 +36,7 @@ class Room {
       ].join(' ');
 }
 
-class RoomSelection extends ChangeNotifier {
+class RoomSelection with ChangeNotifier {
   List<Room> rooms = [];
   Room? selectedRoom;
 
@@ -54,36 +54,42 @@ class RoomSelection extends ChangeNotifier {
 class RoomSelector extends StatelessWidget {
   const RoomSelector({super.key});
 
+  Widget noRooms(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text(
+          "Search for a room, and it'll be added to your room list.\n"
+          "Then, you can freely switch between the rooms.",
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget listRooms(BuildContext context, RoomSelection pick) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      children: pick.rooms
+          .map((room) => ListTile(
+                leading: room.getRoomIcon(),
+                title: Text(room.name.isNotEmpty
+                    ? room.name
+                    : '(Untitled room ${room.id})'),
+                subtitle: Text(room.describeRoomType()),
+                onTap: () => pick.selectRoom(room),
+                selected: pick.selectedRoom?.id == room.id,
+                selectedTileColor: Theme.of(context).highlightColor,
+              ))
+          .toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<RoomSelection>(
-      builder: (context, value, child) {
-        return value.rooms.isEmpty
-            ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "Search for a room, and it'll be added to your room list.\n"
-                    "Then, you can freely switch between the rooms.",
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-            : ListView(
-                children: value.rooms
-                    .map((room) => ListTile(
-                          leading: room.getRoomIcon(),
-                          title: Text(room.name.isNotEmpty
-                              ? room.name
-                              : '(Untitled room ${room.id})'),
-                          subtitle: Text(room.describeRoomType()),
-                          onTap: () => value.selectRoom(room),
-                          selected: value.selectedRoom?.id == room.id,
-                          selectedTileColor: Theme.of(context).highlightColor,
-                        ))
-                    .toList(),
-              );
-      },
+      builder: (context, pick, _) =>
+          pick.rooms.isEmpty ? noRooms(context) : listRooms(context, pick),
     );
   }
 }

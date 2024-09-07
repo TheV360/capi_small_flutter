@@ -1,3 +1,5 @@
+import 'package:capi_small_mvp/screens/profile_dialog.dart';
+import 'package:capi_small_mvp/widgets/user_list.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -20,105 +22,132 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final Future<CapiProfile> profile;
   late final CapiClient _client;
+  late final Future<CapiProfile> profile;
+
+  static const double breakpoint = 700;
+
+  void _logOut() {
+    _client.forgetToken();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(),
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     _client = context.read<CapiClient>();
+
+    // TODO: why does this get called twice in didChangeDependencies?
+    // plus, should it not be `final` if it could change?
+    profile = _client.fetchMe();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    profile = _client.fetchMe();
   }
 
   @override
   Widget build(BuildContext context) {
+    final twoPane = MediaQuery.sizeOf(context).width > breakpoint;
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => RoomSelection()),
+        ChangeNotifierProvider(create: (_) => RoomSelection()),
         // Provider(
         //   create: (context) => ,
         // ),
       ],
       builder: (context, child) => Scaffold(
         appBar: AppBar(
-          title: const RoomSearch(),
-          actions: [
-            MenuAnchor(
-              menuChildren: [
-                MenuItemButton(
-                  leadingIcon: const Icon(Icons.logout),
-                  child: const Text('Log out'),
-                  onPressed: () {
-                    _client.forgetToken();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-              builder: (context, controller, child) => FutureBuilder(
-                future: profile,
-                builder: (context, snapshot) => IconButton(
-                  tooltip: snapshot.hasData ? snapshot.data!.username : null,
-                  icon: CircleAvatar(
-                    backgroundImage: snapshot.hasData
-                        ? NetworkImage(
-                            _client.getPathToImage(snapshot.data!.avatar))
-                        : null,
-                  ),
-                  onPressed: () {
-                    if (controller.isOpen) {
-                      controller.close();
-                    } else {
-                      controller.open();
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
+          title: const Text('quick chat site offical'),
+          actions: [userMenuAnchor(context)],
         ),
+        drawer: twoPane ? null : Drawer(child: roomSelectionPane()),
         body: SafeArea(
-          child: Row(children: [
-            const Flexible(
-              flex: 1,
-              child: RoomSelector(),
-            ),
-            Flexible(
-              flex: 2,
-              child: Consumer<RoomSelection>(
-                builder: (context, selection, _) => selection.selectedRoom ==
-                        null
-                    ? const Center(child: Text("No room has been selected."))
-                    : Column(
-                        children: [
-                          Expanded(
-                            child: RoomChat(
-                              key: ValueKey(selection.selectedRoom!.id),
-                              room: selection.selectedRoom!,
-                            ),
-                          ),
-                          if (!selection.selectedRoom!.isReadOnly)
-                            const ComposeBox(),
-                        ],
-                      ),
-                /* StreamProvider(
-                create: (context) {},
-                builder: (context, child) => ,
-              ),*/
-              ),
-            ),
-          ]),
+          child: Row(
+            children: [
+              if (twoPane) SizedBox(width: 250, child: roomSelectionPane()),
+              Expanded(child: roomContentPane()),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  MenuAnchor userMenuAnchor(BuildContext context) {
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.badge),
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => const ProfileDialog(),
+          ),
+          child: const Text('Edit profile'),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.logout),
+          onPressed: () => _logOut(),
+          child: const Text('Log out'),
+        ),
+      ],
+      builder: (_, controller, __) => FutureBuilder(
+        future: profile,
+        builder: (_, snapshot) => TextButton.icon(
+          iconAlignment: IconAlignment.end,
+          // Tooltip can be annoying and overlap with menu, so i've
+          // switched from an IconButton to a TextButton with icon
+          label: snapshot.hasData
+              ? Text(snapshot.data!.username)
+              : const Text("Dummy"),
+          icon: CircleAvatar(
+            backgroundImage: snapshot.hasData
+                ? NetworkImage(_client.getPathToImage(snapshot.data!.avatar))
+                : null,
+          ),
+          onPressed: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget roomSelectionPane() {
+    return const Column(
+      children: [
+        RoomSearch(),
+        Expanded(child: RoomSelector()),
+      ],
+    );
+  }
+
+  Widget roomContentPane() {
+    return Consumer<RoomSelection>(
+      builder: (context, selection, _) => selection.selectedRoom == null
+          ? const Center(child: Text("No room has been selected."))
+          : Column(
+              children: [
+                const UserList(users: ['Dummy']),
+                Expanded(
+                  child: RoomChat(
+                    key: ValueKey(selection.selectedRoom!.id),
+                    room: selection.selectedRoom!,
+                  ),
+                ),
+                if (!selection.selectedRoom!.isReadOnly) const ComposeBox(),
+              ],
+            ),
     );
   }
 }

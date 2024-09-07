@@ -31,11 +31,13 @@ class _RoomChatState extends State<RoomChat> {
   }
 
   Future<void> uiStuff() async {
+    // TODO: pull this out of here so i can make userlists
     await for (final small in chatStream) {
       setState(() {
         messages.add(small);
-        scrollController.jumpTo(scrollController.position.maxScrollExtent);
       });
+
+      scrollController.jumpTo(scrollController.position.maxScrollExtent);
     }
   }
 

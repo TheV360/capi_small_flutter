@@ -55,9 +55,9 @@ class _LoginScreenState extends State<LoginScreen> {
               label: 'Details',
               onPressed: () => showDialog(
                 context: context,
-                builder: (context) => Dialog(
-                  child: Text(other.toString()),
-                ),
+              builder: (context) => AlertDialog(
+                title: const Text('Unknown error.'),
+                content: Text(other.toString()),
               ),
             ),
           ),
@@ -89,10 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Spacer(flex: 3),
                     TextFormField(
+                      autofocus: true,
                       controller: usernameController,
                       enabled: !_inProgress,
                       maxLines: 1,
@@ -106,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                         return null;
                       },
+                      textInputAction: TextInputAction.next,
                     ),
                     TextFormField(
                       controller: passwordController,
@@ -124,13 +126,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                         return null;
                       },
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: _inProgress ? null : (_) => _doLogin(),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 16.0),
                     ElevatedButton(
                       onPressed: _inProgress ? null : _doLogin,
                       child: const Text('Log in'),
                     ),
-                    const Spacer(flex: 3)
                   ],
                 ),
               ),

@@ -23,7 +23,6 @@ class _RoomSearchState extends State<RoomSearch> {
     final client = context.read<CapiClient>();
     final query = text.trim();
     _runningQuery = query;
-    // print("starting query '$query'");
     final int? roomId = switch (RegExp(r'^#(\d+)$').firstMatch(query)) {
       final match? => int.tryParse(match.group(1) ?? ''),
       _ => null,
@@ -31,10 +30,8 @@ class _RoomSearchState extends State<RoomSearch> {
     final results = await (roomId == null
         ? client.fetchSearchByName(query)
         : client.fetchSearchById(roomId));
-    // print("done with query '$query'");
     if (query != _runningQuery) {
       // oops! took too long and the user wrote something else. sucks to suck
-      // print("throwing away query '$query'");
       return null;
     }
     return results;
@@ -56,18 +53,20 @@ class _RoomSearchState extends State<RoomSearch> {
         suggestionsBuilder: (context, controller) async {
           final freshResults = await _debouncedSearch(controller.text);
           _lastResults = freshResults ?? _lastResults;
-          return _lastResults.map(Room.fromSmall).map((room) => ListTile(
-                leading: room.getRoomIcon(),
-                title: Text(room.name.isNotEmpty
-                    ? room.name
-                    : '(Untitled room ${room.id})'),
-                subtitle: Text(room.describeRoomType()),
-                onTap: () {
-                  selection.selectRoom(room);
-                  controller.closeView(null);
-                },
-                selected: selection.selectedRoom?.id == room.id,
-              ));
+          return _lastResults.map(Room.fromSmall).map(
+                (room) => ListTile(
+                  leading: room.getRoomIcon(),
+                  title: Text(room.name.isNotEmpty
+                      ? room.name
+                      : '(Untitled room ${room.id})'),
+                  subtitle: Text(room.describeRoomType()),
+                  onTap: () {
+                    selection.selectRoom(room);
+                    controller.closeView(null);
+                  },
+                  selected: selection.selectedRoom?.id == room.id,
+                ),
+              );
         },
       ),
     );

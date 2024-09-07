@@ -54,3 +54,11 @@ class _MainAppState extends State<MainApp> {
 // https://github.com/Trindade7/two_columns/tree/main/lib - it's janky old but it's literally exactly what i want
 // https://codelabs.developers.google.com/codelabs/flutter-animated-responsive-layout#5 - completely bogged down by the part where they add wacky intricate animations. i'm still jamming! i can't add animations yet!
 // https://youtu.be/LeKLGzpsz9I?t=831 - mediaquery things to keep in mind
+
+// https://raw.githubusercontent.com/dart-lang/http/master/pkgs/cronet_http/example/lib/main.dart
+// https://blog.burkharts.net/everything-you-always-wanted-to-know-about-httpclients - are they trying to sell me something
+
+// https://pub.dev/packages/dynamic_color
+// -> https://dartling.dev/dynamic-theme-color-material-3-you-flutter
+
+// https://m3.material.io/foundations/layout/understanding-layout/parts-of-layout#17dcca34-ce17-40d7-8b3f-a7186dfb5fc2

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 
 import 'package:capi_small_mvp/csv_parser.dart';
@@ -105,18 +107,24 @@ class CapiClient {
     }
   }
 
+  /// Fetches messages using a "last message ID" as a sort of reference point.
+  /// If it's -1, it represents the last message. The default parameters will
+  /// return the last 30 messages in the room, represented by `-30`, meaning
+  /// 30 messages before `lastMessageId`. It may return less than the requested
+  /// number, or an empty list, if the room doesn't have as many messages.
+  ///
+  /// this is incomplete docs lol
   Future<List<CapiSmall>> fetchChat({
-    List<int> roomIds = const [0],
-    int lastMessageId = -1,
-    int getMessages = -30,
+    final List<int> roomIds = const [0],
+    final int lastMessageId = -1,
+    final int messagesToGet = -30,
   }) async {
     assert(roomIds.isNotEmpty);
     final uri = Uri.parse('$_smallUri/chat'
         '?rooms=${roomIds.join(',')}'
         '&mid=$lastMessageId'
-        '&get=$getMessages');
+        '&get=$messagesToGet');
     final response = await _client.get(uri, headers: _authHeader);
-    // print(response.body);
 
     return switch (response.statusCode) {
       200 => CapiSmall.fromCsv(response.body),
@@ -124,33 +132,32 @@ class CapiClient {
     };
   }
 
+  // TODO: streamcontroller not done?
   Stream<CapiSmall> streamChat({
-    List<int> roomIds = const [0],
-    int initialMessagesLength = 30,
+    final List<int> roomIds = const [0],
+    int lastMessageId = -1,
   }) async* {
-    var lastMessageId = -1;
-    var messagesLength = -initialMessagesLength;
+    final controller = StreamController();
 
     while (true) {
       for (final small in await fetchChat(
         roomIds: roomIds,
         lastMessageId: lastMessageId,
-        getMessages: messagesLength,
+        messagesToGet: 30,
       )) {
         if (small.messageId != null && small.messageId! > lastMessageId) {
           lastMessageId = small.messageId!;
         }
-        yield small;
+        controller.add(small);
       }
-      messagesLength = 30;
     }
   }
 
   Future<void> postInChat({
-    required int roomId,
-    required String message,
-    String markup = '12y2',
-    String? avatar,
+    required final int roomId,
+    required final String message,
+    final String markup = '12y2',
+    final String? avatar,
   }) async {
     final uri = Uri.parse([
       '$_smallUri/post/$roomId',
@@ -158,7 +165,7 @@ class CapiClient {
       if (avatar != null) '&values[a]=$avatar',
       '&message=${Uri.encodeComponent(message)}',
     ].join());
-    // print(uri);
+
     final response = await _client.get(uri, headers: _authHeader);
     if (response.statusCode != 200) throw Exception();
   }
