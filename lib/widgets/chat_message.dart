@@ -18,7 +18,7 @@ class ChatMessage extends StatelessWidget {
       leading: CircleAvatar(
         child: Image.memory(
           base64Decode(defaultIcon),
-          fit: BoxFit.contain,
+          fit: BoxFit.fill,
           filterQuality: FilterQuality.none,
         ),
       ),

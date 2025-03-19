@@ -1,10 +1,11 @@
-import 'package:capi_small_mvp/model/capi_small.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
 import 'package:capi_small_mvp/debouncable.dart';
+import 'package:capi_small_mvp/model/capi_small.dart';
 import 'package:capi_small_mvp/network/capi_client.dart';
+import 'package:capi_small_mvp/widgets/room_data.dart';
 import 'package:capi_small_mvp/widgets/room_selector.dart';
 
 class RoomSearch extends StatefulWidget {
@@ -53,20 +54,22 @@ class _RoomSearchState extends State<RoomSearch> {
         suggestionsBuilder: (context, controller) async {
           final freshResults = await _debouncedSearch(controller.text);
           _lastResults = freshResults ?? _lastResults;
-          return _lastResults.map(Room.fromSmall).map(
-                (room) => ListTile(
-                  leading: room.getRoomIcon(),
-                  title: Text(room.name.isNotEmpty
-                      ? room.name
-                      : '(Untitled room ${room.id})'),
-                  subtitle: Text(room.describeRoomType()),
-                  onTap: () {
-                    selection.selectRoom(room);
-                    controller.closeView(null);
-                  },
-                  selected: selection.selectedRoom?.id == room.id,
-                ),
-              );
+          return _lastResults
+              .map((small) => (small: small, room: Room.fromSmall(small)))
+              .map((out) => ListTile(
+                    leading: out.room.getRoomIcon(),
+                    title: Text(out.room.name.isNotEmpty
+                        ? out.room.name
+                        : '(Untitled room ${out.room.id})'),
+                    subtitle: Text(out.room.describeRoomType()),
+                    onTap: () {
+                      final roomsData = context.read<RoomsData>();
+                      roomsData.recognizeRoom(out.small);
+                      selection.selectRoom(out.room);
+                      controller.closeView(null);
+                    },
+                    selected: selection.selectedRoom?.id == out.room.id,
+                  ));
         },
       ),
     );

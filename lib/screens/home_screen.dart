@@ -1,4 +1,5 @@
 import 'package:capi_small_mvp/screens/profile_dialog.dart';
+import 'package:capi_small_mvp/widgets/room_data.dart';
 import 'package:capi_small_mvp/widgets/user_list.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final CapiClient _client;
-  late final Future<CapiProfile> profile;
+  late Future<CapiProfile> profile;
 
   static const double breakpoint = 700;
 
@@ -57,10 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final twoPane = MediaQuery.sizeOf(context).width > breakpoint;
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => RoomsData()..listen(_client)),
         ChangeNotifierProvider(create: (_) => RoomSelection()),
-        // Provider(
-        //   create: (context) => ,
-        // ),
       ],
       builder: (context, child) => Scaffold(
         appBar: AppBar(

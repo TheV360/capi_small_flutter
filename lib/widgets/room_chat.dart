@@ -1,3 +1,4 @@
+import 'package:capi_small_mvp/widgets/room_data.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -17,42 +18,25 @@ class RoomChat extends StatefulWidget {
 }
 
 class _RoomChatState extends State<RoomChat> {
-  late final Stream<CapiSmall> chatStream;
-  final List<CapiSmall> messages = [];
   final ScrollController scrollController = ScrollController();
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    chatStream = context.read<CapiClient>().streamChat(
-      roomIds: [widget.room.id],
-    ).where((event) => event.messageId != null);
-    uiStuff();
-  }
-
-  Future<void> uiStuff() async {
-    // TODO: pull this out of here so i can make userlists
-    await for (final small in chatStream) {
-      setState(() {
-        messages.add(small);
-      });
-
-      scrollController.jumpTo(scrollController.position.maxScrollExtent);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      reverse: false,
-      controller: scrollController,
-      itemCount: messages.length,
-      itemBuilder: (context, index) => (index < messages.length)
-          ? ChatMessage(
-              key: ValueKey(messages[index].messageId),
-              inner: messages[index],
-            )
-          : null,
+    final model =
+        context.read<RoomsData>().getRoomById(widget.room.id)!.messages;
+    return ListenableBuilder(
+      listenable: model,
+      builder: (context, child) => ListView.builder(
+        reverse: false,
+        controller: scrollController,
+        itemCount: model.messages.length,
+        itemBuilder: (context, index) => (index < model.messages.length)
+            ? ChatMessage(
+                key: ValueKey(model.messages[index].messageId),
+                inner: model.messages[index],
+              )
+            : null,
+      ),
     );
   }
 }

@@ -16,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  late FocusNode usernameFocusController;
+  late FocusNode passwordFocusController;
 
   bool _inProgress = false;
 
@@ -43,28 +45,46 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
+    } on UserNotFoundException {
+      _showSnackBarMessage(const SnackBar(content: Text('User not found.')));
+      usernameFocusController.requestFocus();
+    } on AuthorizationException {
+      _showSnackBarMessage(const SnackBar(content: Text('Wrong password.')));
+      passwordFocusController.requestFocus();
     } catch (other) {
-      _showSnackBarMessage(switch (other) {
-        UserNotFoundException _ =>
-          const SnackBar(content: Text('User not found.')),
-        AuthorizationException _ =>
-          const SnackBar(content: Text('Wrong password.')),
-        _ => SnackBar(
-            content: const Text('Unknown error.'),
-            action: SnackBarAction(
-              label: 'Details',
-              onPressed: () => showDialog(
-                context: context,
+      _showSnackBarMessage(
+        SnackBar(
+          content: const Text('Unknown error.'),
+          action: SnackBarAction(
+            label: 'Details',
+            onPressed: () => showDialog(
+              context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Unknown error.'),
                 content: Text(other.toString()),
               ),
             ),
           ),
-      });
+        ),
+      );
     }
 
     setState(() => _inProgress = false);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    usernameFocusController = FocusNode();
+    passwordFocusController = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    usernameFocusController.dispose();
+    passwordFocusController.dispose();
   }
 
   @override
@@ -95,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       autofocus: true,
                       controller: usernameController,
+                      focusNode: usernameFocusController,
                       enabled: !_inProgress,
                       maxLines: 1,
                       decoration: const InputDecoration(
@@ -111,6 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextFormField(
                       controller: passwordController,
+                      focusNode: passwordFocusController,
                       enabled: !_inProgress,
                       maxLines: 1,
                       obscureText: true,

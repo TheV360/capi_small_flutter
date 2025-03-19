@@ -1,16 +1,19 @@
 import 'package:capi_small_mvp/csv_parser.dart';
 
+typedef CapiPageId = int;
+typedef CapiMessageId = int;
+
 class CapiSmallState {
   final bool edited;
   final bool deleted;
-  final bool publicallyViewable;
+  final bool publiclyViewable;
   final bool userCanPostInRoom;
   final bool userOwnsRoom;
 
   const CapiSmallState({
     required this.edited,
     required this.deleted,
-    required this.publicallyViewable,
+    required this.publiclyViewable,
     required this.userCanPostInRoom,
     required this.userOwnsRoom,
   });
@@ -18,7 +21,7 @@ class CapiSmallState {
   factory CapiSmallState.parse(String flags) => CapiSmallState(
         edited: flags.contains('E'),
         deleted: flags.contains('D'),
-        publicallyViewable: flags.contains('R'),
+        publiclyViewable: flags.contains('R'),
         userCanPostInRoom: flags.contains('P'),
         userOwnsRoom: flags.contains('O'),
       );
@@ -27,7 +30,7 @@ class CapiSmallState {
   String toString() {
     return '${edited ? 'E' : ''}'
         '${deleted ? 'D' : ''}'
-        '${publicallyViewable ? 'R' : ''}'
+        '${publiclyViewable ? 'R' : ''}'
         '${userCanPostInRoom ? 'P' : ''}'
         '${userOwnsRoom ? 'O' : ''}';
   }
@@ -40,9 +43,9 @@ class CapiSmall {
   final DateTime? postedAt;
   final String module;
   final CapiSmallState state;
-  final int? pageId;
+  final CapiPageId? pageId;
   final int? userId;
-  final int? messageId;
+  final CapiMessageId? messageId;
 
   const CapiSmall({
     required this.pageName,

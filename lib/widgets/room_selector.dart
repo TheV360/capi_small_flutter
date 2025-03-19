@@ -20,7 +20,7 @@ class Room {
   factory Room.fromSmall(CapiSmall small) => Room(
         id: small.pageId!,
         name: small.pageName,
-        isPublic: small.state.publicallyViewable,
+        isPublic: small.state.publiclyViewable,
         isReadOnly: !small.state.userCanPostInRoom,
       );
 
@@ -49,6 +49,14 @@ class RoomSelection with ChangeNotifier {
     selectedRoom = room;
     notifyListeners();
   }
+
+  void dismissRoom(Room room) {
+    if (room.id == selectedRoom?.id) {
+      selectedRoom = null;
+    }
+    rooms.removeWhere((o) => o.id == room.id);
+    notifyListeners();
+  }
 }
 
 class RoomSelector extends StatelessWidget {
@@ -72,7 +80,25 @@ class RoomSelector extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       children: pick.rooms
           .map((room) => ListTile(
-                leading: room.getRoomIcon(),
+                leading: MenuAnchor(
+                  menuChildren: [
+                    MenuItemButton(
+                      onPressed: () => pick.dismissRoom(room),
+                      leadingIcon: const Icon(Icons.close),
+                      child: const Text("Dismiss"),
+                    )
+                  ],
+                  builder: (_, controller, __) => IconButton(
+                    onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                    icon: room.getRoomIcon(),
+                  ),
+                ),
                 title: Text(room.name.isNotEmpty
                     ? room.name
                     : '(Untitled room ${room.id})'),

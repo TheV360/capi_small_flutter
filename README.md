@@ -1,3 +1,9 @@
-# capi_small_mvp
+# `caterpie`
 
-A new Flutter project.
+A small ContentAPI client targeting the "small ContentAPI" subset of the the..
+
+## how do you build
+
+```shell
+
+```
