@@ -47,7 +47,7 @@ class _RoomSearchState extends State<RoomSearch> {
   @override
   Widget build(BuildContext context) {
     return Consumer<RoomSelection>(
-      builder: (context, selection, _) => SearchAnchor.bar(
+      builder: (lowContext, selection, _) => SearchAnchor.bar(
         // remove the shadow by removing all elevation
         barElevation: const WidgetStatePropertyAll(0.0),
         barHintText: 'Find a room',
@@ -63,10 +63,12 @@ class _RoomSearchState extends State<RoomSearch> {
                         : '(Untitled room ${out.room.id})'),
                     subtitle: Text(out.room.describeRoomType()),
                     onTap: () {
-                      final roomsData = context.read<RoomsData>();
-                      roomsData.recognizeRoom(out.small);
-                      selection.selectRoom(out.room);
-                      controller.closeView(null);
+                      setState(() {
+                        final roomsData = lowContext.read<RoomsData>();
+                        roomsData.recognizeRoom(out.small);
+                        selection.selectRoom(out.room);
+                        controller.closeView(null);
+                      });
                     },
                     selected: selection.selectedRoom?.id == out.room.id,
                   ));

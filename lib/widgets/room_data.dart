@@ -110,10 +110,10 @@ class RoomsData with ChangeNotifier {
   RoomData? getRoomById(CapiPageId pageId) => _rooms[pageId];
 
   RoomData recognizeRoom(CapiSmall roomEntry) {
-    final existingRoom = _rooms[roomEntry.messageId!];
+    final existingRoom = _rooms[roomEntry.pageId!];
     if (existingRoom == null) {
       final newRoom = RoomData(roomEntry);
-      _rooms[roomEntry.messageId!] = newRoom;
+      _rooms[roomEntry.pageId!] = newRoom;
       notifyListeners();
       return newRoom;
     } else {
