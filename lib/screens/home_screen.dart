@@ -63,7 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       builder: (context, child) => Scaffold(
         appBar: AppBar(
-          title: const Text('quick chat site offical'),
+          title: Consumer<RoomsData>(
+              builder: (context, roomsData, _) =>
+                  UserList(users: roomsData.globalUserList.toList())),
           actions: [userMenuAnchor(context)],
         ),
         drawer: twoPane ? null : Drawer(child: roomSelectionPane()),
@@ -146,14 +148,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ListenableBuilder(
               listenable: roomData.userList,
               builder: (context, _) =>
-                  UserList(users: roomData.userList.users.toList())),
+                  UserList(users: roomData.userList.toList())),
           Expanded(
             child: RoomChat(
-              key: ValueKey(selection.selectedRoom!.id),
-              room: selection.selectedRoom!,
+              key: ValueKey(selectedRoom.id),
+              room: selectedRoom,
             ),
           ),
-          if (!selection.selectedRoom!.isReadOnly) const ComposeBox(),
+          if (!selectedRoom.isReadOnly) const ComposeBox(),
         ],
       );
     });

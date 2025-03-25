@@ -88,6 +88,8 @@ class RoomUserListModel with ChangeNotifier {
     _users.addAll(incoming);
     notifyListeners();
   }
+
+  List<String> toList() => _users.toList()..sort();
 }
 
 /// see [package:capi_small_mvp/widgets/room_selector.dart:7]
@@ -124,7 +126,8 @@ class RoomsData with ChangeNotifier {
   }
 
   Future<void> listen(CapiClient client) async {
-    commandStream = client.streamChat(roomIds: [1]); // TODO!
+    print("waking up!");
+    commandStream = client.fetchAndStreamChat(roomIds: [1]); // TODO!
     await for (final small in commandStream) {
       switch (small.pageId) {
         case null:

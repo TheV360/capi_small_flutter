@@ -135,13 +135,10 @@ class CapiClient {
     }
   }
 
-  // TODO: streamcontroller not done?
   Stream<CapiSmall> streamChat({
     final List<int> roomIds = const [0],
     int lastMessageId = -1,
   }) async* {
-    // final controller = StreamController();
-
     while (true) {
       for (final small in await fetchChat(
         roomIds: roomIds,
@@ -154,6 +151,19 @@ class CapiClient {
         yield small;
       }
     }
+  }
+
+  /// Stream chat after fetching the first number of messages for context.
+  Stream<CapiSmall> fetchAndStreamChat({
+    final List<int> roomIds = const [0],
+    final int contextMessagesToGet = 30,
+  }) async* {
+    final chat = await fetchChat(
+        roomIds: roomIds,
+        messagesToGet: -contextMessagesToGet.abs(),
+    );
+    for (CapiSmall small in chat) { yield small; }
+    yield* streamChat(roomIds: roomIds);
   }
 
   Future<void> postInChat({
