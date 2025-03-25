@@ -27,7 +27,17 @@ class _MainAppState extends State<MainApp> {
         debugShowCheckedModeBanner: false,
         title: HomeScreen.appName,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.lime,
+            brightness: Brightness.light,
+          ),
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.lime,
+            brightness: Brightness.dark,
+          ),
           useMaterial3: true,
         ),
         home: const LoginScreen(),

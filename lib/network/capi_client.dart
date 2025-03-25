@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
@@ -126,10 +127,12 @@ class CapiClient {
         '&get=$messagesToGet');
     final response = await _client.get(uri, headers: _authHeader);
 
-    return switch (response.statusCode) {
-      200 => CapiSmall.fromCsv(response.body),
-      _ => throw Exception("too lazy to figure out errors yet"),
-    };
+    if (response.statusCode == 200) {
+      final body = utf8.decode(response.bodyBytes, allowMalformed: true);
+      return CapiSmall.fromCsv(body);
+    } else {
+      throw Exception("too lazy to figure out errors yet");
+    }
   }
 
   // TODO: streamcontroller not done?
@@ -137,7 +140,7 @@ class CapiClient {
     final List<int> roomIds = const [0],
     int lastMessageId = -1,
   }) async* {
-    final controller = StreamController();
+    // final controller = StreamController();
 
     while (true) {
       for (final small in await fetchChat(
@@ -148,7 +151,7 @@ class CapiClient {
         if (small.messageId != null && small.messageId! > lastMessageId) {
           lastMessageId = small.messageId!;
         }
-        controller.add(small);
+        yield small;
       }
     }
   }

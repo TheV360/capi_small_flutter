@@ -132,21 +132,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget roomContentPane() {
-    return Consumer<RoomSelection>(
-      builder: (context, selection, _) => selection.selectedRoom == null
-          ? const Center(child: Text("No room has been selected."))
-          : Column(
-              children: [
-                const UserList(users: ['Dummy']),
-                Expanded(
-                  child: RoomChat(
-                    key: ValueKey(selection.selectedRoom!.id),
-                    room: selection.selectedRoom!,
-                  ),
-                ),
-                if (!selection.selectedRoom!.isReadOnly) const ComposeBox(),
-              ],
+    return Consumer<RoomSelection>(builder: (context, selection, _) {
+      if (selection.selectedRoom == null) {
+        return const Center(child: Text("No room has been selected."));
+      }
+      final selectedRoom = selection.selectedRoom!;
+      final roomData = context.read<RoomsData>().getRoomById(selectedRoom.id);
+      if (roomData == null) {
+        return const Center(child: Text("Something weird happened."));
+      }
+      return Column(
+        children: [
+          ListenableBuilder(
+              listenable: roomData.userList,
+              builder: (context, _) =>
+                  UserList(users: roomData.userList.users.toList())),
+          Expanded(
+            child: RoomChat(
+              key: ValueKey(selection.selectedRoom!.id),
+              room: selection.selectedRoom!,
             ),
-    );
+          ),
+          if (!selection.selectedRoom!.isReadOnly) const ComposeBox(),
+        ],
+      );
+    });
   }
 }

@@ -88,4 +88,12 @@ class CapiSmall {
   static List<CapiSmall> fromCsv(String text) {
     return parseCsv(text).map((row) => CapiSmall.fromCsvRow(row)).toList();
   }
+
+  @override
+  String toString() {
+    return '$userName ($userId; $module)'
+        ' in $pageName ($pageId; $state)'
+        ' at $postedAt ($messageId)'
+        ' says: $message';
+  }
 }

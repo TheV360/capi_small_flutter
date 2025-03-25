@@ -30,6 +30,7 @@ class _ComposeBoxState extends State<ComposeBox> {
         message: message,
       );
     } catch (e) {
+      print(e);
       textEditingController.text = message;
     }
     setState(() => sending = false);

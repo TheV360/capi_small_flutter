@@ -25,8 +25,8 @@ class RoomMessagesModel with ChangeNotifier {
     //     .indexWhere((existing) => existing.messageId! > incoming.messageId!);
     final insertIndex = findMessageWithClosestId(msgId);
     if (insertIndex == null) {
-      final lowBound = _messages.first.messageId;
-      final uppBound = _messages.last.messageId;
+      final lowBound = _messages.firstOrNull?.messageId ?? 0;
+      final uppBound = _messages.lastOrNull?.messageId ?? 0;
       print("couldn't find best insert index"
           " for $msgId in ($lowBound, $uppBound)");
       _messages.add(incoming);
@@ -46,7 +46,7 @@ class RoomMessagesModel with ChangeNotifier {
   int? findMessageWithClosestId(int msgId) {
     int bottomIndex = 0, topIndex = _messages.length;
     assert(areMessagesSorted());
-    while (bottomIndex <= topIndex) {
+    while (bottomIndex < topIndex) {
       // it's binary search.
       final int midIndex = (bottomIndex + topIndex) >> 1;
       final midId = _messages[midIndex].messageId!;
@@ -64,7 +64,7 @@ class RoomMessagesModel with ChangeNotifier {
   bool areMessagesValid() => _messages.every((m) => m.messageId != null);
 
   bool areMessagesSorted() {
-    if (!areMessagesSorted()) return false;
+    if (!areMessagesValid()) return false;
     for (var left = 0; left < _messages.length - 1; left++) {
       if (_messages[left].messageId! > _messages[left + 1].messageId!) {
         return false;
@@ -124,9 +124,9 @@ class RoomsData with ChangeNotifier {
   }
 
   Future<void> listen(CapiClient client) async {
-    commandStream = client.streamChat();
+    commandStream = client.streamChat(roomIds: [1]); // TODO!
     await for (final small in commandStream) {
-      switch (small.messageId) {
+      switch (small.pageId) {
         case null:
           continue;
         case 0:
