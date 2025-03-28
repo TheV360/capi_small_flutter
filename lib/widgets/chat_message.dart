@@ -10,7 +10,9 @@ const defaultIcon =
 class ChatMessage extends StatelessWidget {
   final CapiSmall inner;
 
-  const ChatMessage({super.key, required this.inner});
+  final void Function()? onTap;
+
+  const ChatMessage({super.key, required this.inner, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +25,12 @@ class ChatMessage extends StatelessWidget {
         ),
       ),
       title: Text(inner.message),
-      subtitle: Text('${inner.userName} · ${inner.postedAt.toString()}'),
-      onTap: () {},
+      subtitle: Text([
+        inner.userName,
+        if (inner.postedAt != null) inner.postedAt!.toLocal(),
+        if (inner.state.edited) 'Edited',
+      ].join(' · ')),
+      onTap: onTap,
     );
   }
 }

@@ -23,15 +23,21 @@ class RoomMessagesModel with ChangeNotifier {
 
     // final insertIndex = _messages
     //     .indexWhere((existing) => existing.messageId! > incoming.messageId!);
-    final insertIndex = findMessageWithClosestId(msgId);
-    if (insertIndex == null) {
+    final index = findMessageWithClosestId(msgId);
+    if (index == null) {
       final lowBound = _messages.firstOrNull?.messageId ?? 0;
       final uppBound = _messages.lastOrNull?.messageId ?? 0;
-      print("couldn't find best insert index"
-          " for $msgId in ($lowBound, $uppBound)");
+      // print("couldn't find best insert index"
+      //     " for $msgId in ($lowBound, $uppBound)");
       _messages.add(incoming);
     } else {
-      _messages.insert(insertIndex, incoming);
+      final (insertIndex, message) = index;
+      if (message.messageId! == incoming.messageId!) {
+        // handle edits
+        _messages[insertIndex] = incoming;
+      } else {
+        _messages.insert(insertIndex, incoming);
+      }
     }
     notifyListeners();
   }
@@ -43,7 +49,7 @@ class RoomMessagesModel with ChangeNotifier {
     if (newLength != oldLength) notifyListeners();
   }
 
-  int? findMessageWithClosestId(int msgId) {
+  (int, CapiSmall)? findMessageWithClosestId(int msgId) {
     int bottomIndex = 0, topIndex = _messages.length;
     assert(areMessagesSorted());
     while (bottomIndex < topIndex) {
@@ -55,7 +61,7 @@ class RoomMessagesModel with ChangeNotifier {
       } else if (msgId < midId) {
         topIndex = midIndex - 1;
       } else {
-        return midIndex;
+        return (midIndex, _messages[midIndex]);
       }
     }
     return null;
@@ -105,7 +111,6 @@ class RoomData {
 }
 
 class RoomsData with ChangeNotifier {
-  late final Stream<CapiSmall> commandStream;
   final RoomUserListModel globalUserList = RoomUserListModel();
   final Map<CapiPageId, RoomData> _rooms = {};
 
@@ -125,27 +130,34 @@ class RoomsData with ChangeNotifier {
     }
   }
 
-  Future<void> listen(CapiClient client) async {
-    print("waking up!");
-    commandStream = client.fetchAndStreamChat(roomIds: [1]); // TODO!
-    await for (final small in commandStream) {
-      switch (small.pageId) {
-        case null:
-          continue;
-        case 0:
-          switch (small.module) {
-            case 'userlist':
-              globalUserList.updateFromString(small.message);
-          }
-        default:
-          RoomData roomData = recognizeRoom(small);
-          switch (small.module) {
-            case '':
-              roomData.messages.addMessage(small);
-            case 'userlist':
-              roomData.userList.updateFromString(small.message);
-          }
-      }
+  void doCommand(CapiSmall small) {
+    switch (small.pageId) {
+      case null:
+        return;
+      case 0:
+        switch (small.module) {
+          case 'userlist':
+            globalUserList.updateFromString(small.message);
+        }
+      default:
+        RoomData roomData = recognizeRoom(small);
+        switch (small.module) {
+          case '':
+            roomData.messages.addMessage(small);
+          case 'userlist':
+            roomData.userList.updateFromString(small.message);
+        }
     }
+  }
+
+  void listen(CapiClient client) {
+    print("waking up!");
+
+    // TODO: replace tempRoomId
+    final commandStream = client.streamChat(roomIds: [client.tempRoomId]);
+    commandStream.listen(
+      (d) => doCommand(d),
+      onError: (e) => print(e),
+    );
   }
 }

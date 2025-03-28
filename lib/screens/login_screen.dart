@@ -13,11 +13,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>(debugLabel: 'login screen');
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  late FocusNode usernameFocusController;
-  late FocusNode passwordFocusController;
+  late FocusNode usernameFocusNode;
+  late FocusNode passwordFocusNode;
 
   bool _inProgress = false;
 
@@ -30,6 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _doLogin() async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
+
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => _inProgress = true);
 
     final username = usernameController.text;
@@ -47,10 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } on UserNotFoundException {
       _showSnackBarMessage(const SnackBar(content: Text('User not found.')));
-      usernameFocusController.requestFocus();
+      usernameFocusNode.requestFocus();
     } on AuthorizationException {
       _showSnackBarMessage(const SnackBar(content: Text('Wrong password.')));
-      passwordFocusController.requestFocus();
+      passwordFocusNode.requestFocus();
     } catch (other) {
       _showSnackBarMessage(
         SnackBar(
@@ -75,16 +78,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-
-    usernameFocusController = FocusNode();
-    passwordFocusController = FocusNode();
+    usernameFocusNode = FocusNode();
+    passwordFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     super.dispose();
-    usernameFocusController.dispose();
-    passwordFocusController.dispose();
+    usernameFocusNode.dispose();
+    passwordFocusNode.dispose();
   }
 
   @override
@@ -115,9 +117,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       autofocus: true,
                       controller: usernameController,
-                      focusNode: usernameFocusController,
+                      focusNode: usernameFocusNode,
                       enabled: !_inProgress,
-                      maxLines: 1,
                       decoration: const InputDecoration(
                         icon: Icon(Icons.catching_pokemon),
                         labelText: 'Username',
@@ -132,9 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextFormField(
                       controller: passwordController,
-                      focusNode: passwordFocusController,
+                      focusNode: passwordFocusNode,
                       enabled: !_inProgress,
-                      maxLines: 1,
                       obscureText: true,
                       decoration: const InputDecoration(
                         icon: Icon(Icons.key),

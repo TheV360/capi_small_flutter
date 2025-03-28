@@ -82,9 +82,21 @@ class _RoomChatState extends State<RoomChat>
         itemCount: model.messages.length,
         itemBuilder: (context, index) => (index < model.messages.length)
             ? ChatMessage(
-                key: ValueKey(model.messages[/*(model.messages.length - 1) - */index].messageId),
-                inner: model.messages[/*(model.messages.length - 1) - */index],
+                key: ValueKey(model
+                    .messages[/*(model.messages.length - 1) - */ index]
+                    .messageId),
+                inner: model.messages[/*(model.messages.length - 1) - */ index],
                 // onTap: () => scrollToEnd(end: ListEnd.bottom)
+                onTap: () => showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                            content: Text(model.messages[index].toString()),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('All Good'),
+                              )
+                            ])),
               )
             : null,
       ),

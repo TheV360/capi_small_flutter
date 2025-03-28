@@ -1,6 +1,3 @@
-import 'package:capi_small_mvp/screens/profile_dialog.dart';
-import 'package:capi_small_mvp/widgets/room_data.dart';
-import 'package:capi_small_mvp/widgets/user_list.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -8,10 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:capi_small_mvp/model/capi_profile.dart';
 import 'package:capi_small_mvp/network/capi_client.dart';
 import 'package:capi_small_mvp/screens/login_screen.dart';
+import 'package:capi_small_mvp/screens/profile_dialog.dart';
 import 'package:capi_small_mvp/widgets/compose_box.dart';
 import 'package:capi_small_mvp/widgets/room_chat.dart';
 import 'package:capi_small_mvp/widgets/room_search.dart';
 import 'package:capi_small_mvp/widgets/room_selector.dart';
+import 'package:capi_small_mvp/widgets/room_data.dart';
+import 'package:capi_small_mvp/widgets/user_list.dart';
 
 class HomeScreen extends StatefulWidget {
   static const appName = "Caterpie";
@@ -68,7 +68,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   UserList(users: roomsData.globalUserList.toList())),
           actions: [userMenuAnchor(context)],
         ),
-        drawer: twoPane ? null : Drawer(child: roomSelectionPane()),
+        drawer: twoPane
+            ? null
+            : SafeArea(
+                child: Drawer(child: roomSelectionPane()),
+              ),
         body: SafeArea(
           child: Row(
             children: [

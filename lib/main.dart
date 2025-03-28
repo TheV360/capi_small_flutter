@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:capi_small_mvp/network/capi_client.dart';
-import 'package:capi_small_mvp/screens/home_screen.dart';
+import 'package:capi_small_mvp/screens/instance_screen.dart';
 import 'package:capi_small_mvp/screens/login_screen.dart';
+import 'package:capi_small_mvp/screens/home_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -21,7 +22,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return Provider<CapiClient>(
-      create: (_) => CapiClient('http://localhost:5147'),
+      create: (_) => CapiClient('http://localhost:5147', 1),
       dispose: (_, value) => value.dispose(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

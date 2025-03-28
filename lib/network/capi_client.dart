@@ -17,6 +17,8 @@ class CapiClient {
   String _baseUri;
   String? _tokenWithBearer;
 
+  final CapiPageId tempRoomId;
+
   bool isLoggedIn() => _tokenWithBearer != null;
   String getPathToImage(String hash) =>
       '$_baseUri/api/file/raw/$hash?size=100&crop=true';
@@ -33,16 +35,14 @@ class CapiClient {
   Map<String, String>? get _authHeader =>
       _tokenWithBearer != null ? {'Authorization': _tokenWithBearer!} : null;
 
-  CapiClient(this._baseUri) : _client = http.Client();
+  CapiClient(this._baseUri, this.tempRoomId) : _client = http.Client();
 
   void dispose() => _client.close();
 
   Future<void> fetchToken(String username, String password) async {
-    final response = await _client.get(
-      Uri.parse('$_smallUri/login'
-          '?username=${Uri.encodeQueryComponent(username)}'
-          '&password=${Uri.encodeQueryComponent(password)}'),
-    );
+    final query = {'username': username, 'password': password};
+    final response = await _client
+        .get(Uri.parse('$_smallUri/login').replace(queryParameters: query));
 
     final passwordRegExp = RegExp(r'Password', caseSensitive: false);
     final userRegExp = RegExp(r'User', caseSensitive: false);
@@ -66,10 +66,9 @@ class CapiClient {
     // be nice to api and don't let it spill out every single page ever made
     if (name.isEmpty) return [];
 
-    final query = Uri.encodeComponent(name);
-
+    final query = {'search': '"$name"'};
     final response = await _client.get(
-      Uri.parse('$_smallUri/search' '?search=%25$query%25'),
+      Uri.parse('$_smallUri/search').replace(queryParameters: query),
       headers: _authHeader,
     );
 
@@ -80,8 +79,9 @@ class CapiClient {
   }
 
   Future<List<CapiSmall>> fetchSearchById(int id) async {
+    final query = {'id': '$id'};
     final response = await _client.get(
-      Uri.parse('$_smallUri/search' '?id=$id'),
+      Uri.parse('$_smallUri/search').replace(queryParameters: query),
       headers: _authHeader,
     );
 
@@ -121,10 +121,12 @@ class CapiClient {
     final int messagesToGet = -30,
   }) async {
     assert(roomIds.isNotEmpty);
-    final uri = Uri.parse('$_smallUri/chat'
-        '?rooms=${roomIds.join(',')}'
-        '&mid=$lastMessageId'
-        '&get=$messagesToGet');
+    final query = {
+      if (roomIds.isNotEmpty) 'rooms': roomIds.join(','),
+      'mid': '$lastMessageId',
+      'get': '$messagesToGet',
+    };
+    final uri = Uri.parse('$_smallUri/chat').replace(queryParameters: query);
     final response = await _client.get(uri, headers: _authHeader);
 
     if (response.statusCode == 200) {
@@ -159,10 +161,12 @@ class CapiClient {
     final int contextMessagesToGet = 30,
   }) async* {
     final chat = await fetchChat(
-        roomIds: roomIds,
-        messagesToGet: -contextMessagesToGet.abs(),
+      roomIds: roomIds,
+      messagesToGet: -contextMessagesToGet.abs(),
     );
-    for (CapiSmall small in chat) { yield small; }
+    for (CapiSmall small in chat) {
+      yield small;
+    }
     yield* streamChat(roomIds: roomIds);
   }
 
@@ -172,14 +176,17 @@ class CapiClient {
     final String markup = '12y2',
     final String? avatar,
   }) async {
-    final uri = Uri.parse([
-      '$_smallUri/post/$roomId',
-      '?values[m]=$markup',
-      if (avatar != null) '&values[a]=$avatar',
-      '&message=${Uri.encodeComponent(message)}',
-    ].join());
+    final query = {
+      'values[m]': markup,
+      if (avatar != null) 'values[a]': avatar,
+      'message': message
+    };
+    final uri =
+        Uri.parse('$_smallUri/post/$roomId').replace(queryParameters: query);
 
     final response = await _client.get(uri, headers: _authHeader);
     if (response.statusCode != 200) throw Exception();
+
+    print(response);
   }
 }
