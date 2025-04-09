@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // token is saved in the state of CapiClient.
-      await context.read<CapiClient>().fetchToken(username, password);
+      await context.read<CapiClient>().fetchAndSaveToken(username, password);
 
       if (!mounted) return; // -> can't really do anything..
 
@@ -102,66 +102,79 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+      persistentFooterButtons: [
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.tonal(
+            onPressed: _inProgress ? null : _doLogin,
+            child: const Text('Log in'),
+          ),
+        ),
+      ],
       body: SafeArea(
         child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints.loose(const Size.fromWidth(360)),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    TextFormField(
-                      autofocus: true,
-                      controller: usernameController,
-                      focusNode: usernameFocusNode,
-                      enabled: !_inProgress,
-                      decoration: const InputDecoration(
-                        icon: Icon(Icons.catching_pokemon),
-                        labelText: 'Username',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Enter a username.';
-                        }
-                        return null;
-                      },
-                      textInputAction: TextInputAction.next,
-                    ),
-                    TextFormField(
-                      controller: passwordController,
-                      focusNode: passwordFocusNode,
-                      enabled: !_inProgress,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        icon: Icon(Icons.key),
-                        labelText: 'Password',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Enter a password.';
-                        } else if (value.length < 4) {
-                          return 'Enter a longer password.';
-                        }
-                        return null;
-                      },
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: _inProgress ? null : (_) => _doLogin(),
-                    ),
-                    const SizedBox(height: 16.0),
-                    ElevatedButton(
-                      onPressed: _inProgress ? null : _doLogin,
-                      child: const Text('Log in'),
-                    ),
-                  ],
-                ),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints.loose(const Size.fromWidth(360)),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildForm(),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Form _buildForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          TextFormField(
+            autofocus: true,
+            controller: usernameController,
+            focusNode: usernameFocusNode,
+            enabled: !_inProgress,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              icon: Icon(Icons.catching_pokemon),
+              labelText: 'Username',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Enter a username.';
+              }
+              return null;
+            },
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 8.0),
+          TextFormField(
+            controller: passwordController,
+            focusNode: passwordFocusNode,
+            enabled: !_inProgress,
+            obscureText: true,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              icon: Icon(Icons.key),
+              labelText: 'Password',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Enter a password.';
+              } else if (value.length < 4) {
+                return 'Enter a longer password.';
+              }
+              return null;
+            },
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: _inProgress ? null : (_) => _doLogin(),
+          ),
+        ],
       ),
     );
   }

@@ -21,8 +21,9 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
+    // https://api.flutter.dev/flutter/widgets/Navigator-class.html
     return Provider<CapiClient>(
-      create: (_) => CapiClient('http://localhost:5147', 1),
+      create: (_) => CapiClient()..tempRoomId=95,
       dispose: (_, value) => value.dispose(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -41,12 +42,13 @@ class _MainAppState extends State<MainApp> {
           ),
           useMaterial3: true,
         ),
-        home: const LoginScreen(),
+        home: const InstanceScreen(),
       ),
     );
   }
 }
 
+// TODO: login page's focus nodes don't work
 
 // login page leads to home page where it might just say "search for a pgae"
 // and then you press the search button and it opens up a modal ontop of the app

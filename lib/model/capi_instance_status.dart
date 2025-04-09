@@ -1,14 +1,19 @@
 import 'dart:convert';
 
 Duration fromDurationString(String duration) {
-  final [days, hours, minutes, seconds, milliseconds] =
-      duration.split(RegExp('.:')).map((p) => int.parse(p)).toList();
+  final splitDuration =
+      duration.split(RegExp('[.:]')).map((p) => int.tryParse(p) ?? 0).toList();
   return Duration(
-      days: days,
-      hours: hours,
-      minutes: minutes,
-      seconds: seconds,
-      milliseconds: milliseconds,
+    days:
+        splitDuration.length >= 5 ? splitDuration[splitDuration.length - 5] : 0,
+    hours:
+        splitDuration.length >= 4 ? splitDuration[splitDuration.length - 4] : 0,
+    minutes:
+        splitDuration.length >= 3 ? splitDuration[splitDuration.length - 3] : 0,
+    seconds:
+        splitDuration.length >= 2 ? splitDuration[splitDuration.length - 2] : 0,
+    milliseconds:
+        splitDuration.length >= 1 ? splitDuration[splitDuration.length - 1] : 0,
   );
 }
 

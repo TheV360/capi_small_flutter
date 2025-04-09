@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:capi_small_mvp/csv_parser.dart';
+import 'package:capi_small_mvp/model/capi_instance_status.dart';
 import 'package:capi_small_mvp/model/capi_profile.dart';
 import 'package:capi_small_mvp/model/capi_small.dart';
 
@@ -14,16 +15,24 @@ class AuthorizationException implements Exception {}
 
 class CapiClient {
   final http.Client _client;
-  String _baseUri;
+  String? _baseUri;
   String? _tokenWithBearer;
 
-  final CapiPageId tempRoomId;
+  CapiInstanceStatus? instanceStatus;
+  CapiPageId? tempRoomId;
 
   bool isLoggedIn() => _tokenWithBearer != null;
   String getPathToImage(String hash) =>
       '$_baseUri/api/file/raw/$hash?size=100&crop=true';
 
-  String get baseUri => _baseUri;
+  // aaagh TODO maybe replace all Uri.parse with Uri.replace
+  // and change the type of baseUri to be Uri to match?
+  String get baseUri {
+    // mean to do??
+    if (_baseUri == null) throw Exception("no base URI set!");
+    return _baseUri!;
+  }
+
   set baseUri(String value) {
     if (value == _baseUri) return;
 
@@ -35,19 +44,34 @@ class CapiClient {
   Map<String, String>? get _authHeader =>
       _tokenWithBearer != null ? {'Authorization': _tokenWithBearer!} : null;
 
-  CapiClient(this._baseUri, this.tempRoomId) : _client = http.Client();
+  CapiClient() : _client = http.Client();
 
   void dispose() => _client.close();
 
-  Future<void> fetchToken(String username, String password) async {
+  Future<void> fetchAndSaveInstanceStatus(Uri instance) async {
+    final candidateBaseUri = instance.toString();
+
+    final uri = Uri.parse('$candidateBaseUri/api/Status');
+    final response = await _client.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('${response.statusCode} ${response.body}');
+    }
+
+    final Map<String, dynamic> data = json.decode(response.body);
+    instanceStatus = CapiInstanceStatus.fromJson(data);
+    baseUri = candidateBaseUri;
+  }
+
+  Future<void> fetchAndSaveToken(String username, String password) async {
     final query = {'username': username, 'password': password};
-    final response = await _client
-        .get(Uri.parse('$_smallUri/login').replace(queryParameters: query));
+    final uri = Uri.parse('$_smallUri/login').replace(queryParameters: query);
+    final response = await _client.get(uri);
 
     final passwordRegExp = RegExp(r'Password', caseSensitive: false);
     final userRegExp = RegExp(r'User', caseSensitive: false);
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    // await Future.delayed(const Duration(milliseconds: 2000));
     _tokenWithBearer = switch (response.statusCode) {
       200 => 'Bearer ${response.body}',
       400 when response.body.contains(passwordRegExp) =>

@@ -4,14 +4,15 @@ import 'package:provider/provider.dart';
 
 import 'package:capi_small_mvp/model/capi_profile.dart';
 import 'package:capi_small_mvp/network/capi_client.dart';
-import 'package:capi_small_mvp/screens/login_screen.dart';
-import 'package:capi_small_mvp/screens/profile_dialog.dart';
 import 'package:capi_small_mvp/widgets/compose_box.dart';
 import 'package:capi_small_mvp/widgets/room_chat.dart';
 import 'package:capi_small_mvp/widgets/room_search.dart';
 import 'package:capi_small_mvp/widgets/room_selector.dart';
 import 'package:capi_small_mvp/widgets/room_data.dart';
 import 'package:capi_small_mvp/widgets/user_list.dart';
+import 'package:capi_small_mvp/screens/instance_screen.dart';
+import 'package:capi_small_mvp/screens/login_screen.dart';
+import 'package:capi_small_mvp/screens/profile_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   static const appName = "Caterpie";
@@ -36,6 +37,16 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (_) => const LoginScreen(),
       ),
     );
+  }
+
+  void _logOutInstance() {
+    _client.forgetToken();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const InstanceScreen(),
+        ),
+      );
   }
 
   @override
@@ -100,6 +111,11 @@ class _HomeScreenState extends State<HomeScreen> {
           leadingIcon: const Icon(Icons.logout),
           onPressed: () => _logOut(),
           child: const Text('Log out'),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.logout),
+          onPressed: () => _logOutInstance(),
+          child: const Text('Pick instance'),
         ),
       ],
       builder: (_, controller, __) => FutureBuilder(
