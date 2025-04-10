@@ -39,14 +39,13 @@ class _InstanceScreenState extends State<InstanceScreen> {
 
     // todo: distinguish without/with `/api`
     final instanceUri = instanceUriController.text;
-
-    final tempRoomId = tempRoomIdController.text;
+    final tempRoomId = int.tryParse(tempRoomIdController.text);
 
     try {
       final parsedInstanceUri = Uri.parse(instanceUri);
-      await context
-          .read<CapiClient>()
-          .fetchAndSaveInstanceStatus(parsedInstanceUri);
+      final client = context.read<CapiClient>();
+      await client.fetchAndSaveInstanceStatus(parsedInstanceUri);
+      client.tempRoomId = tempRoomId;
 
       if (!mounted) return;
 

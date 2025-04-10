@@ -155,7 +155,7 @@ class RoomsData with ChangeNotifier {
 
     // TODO: replace tempRoomId
     final roomIds = [if (client.tempRoomId != null) client.tempRoomId!];
-    final commandStream = client.streamChat(roomIds: roomIds);
+    final commandStream = client.fetchAndStreamChat(roomIds: roomIds);
     commandStream.listen(
       (d) => doCommand(d),
       onError: (e) => print(e),

@@ -23,7 +23,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     // https://api.flutter.dev/flutter/widgets/Navigator-class.html
     return Provider<CapiClient>(
-      create: (_) => CapiClient()..tempRoomId=95,
+      create: (_) => CapiClient(),
       dispose: (_, value) => value.dispose(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
