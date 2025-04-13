@@ -24,11 +24,16 @@ class ChatMessage extends StatelessWidget {
           filterQuality: FilterQuality.none,
         ),
       ),
-      title: Text(inner.message),
+      title: inner.state.deleted ? null : Text(inner.message),
       subtitle: Text([
-        inner.userName,
-        if (inner.postedAt != null) inner.postedAt!.toLocal(),
+        if (inner.module != '') inner.module,
+        if (inner.userId != null)
+          inner.module == '' ? inner.userName : 'from ${inner.userName}',
+        if (inner.postedAt != null)
+          inner.postedAt!.toLocal().toString().split('.')[0],
         if (inner.state.edited) 'Edited',
+        if (inner.state.deleted) 'Deleted',
+        if (inner.state.userIsRecipient) 'Private',
       ].join(' · ')),
       onTap: onTap,
     );

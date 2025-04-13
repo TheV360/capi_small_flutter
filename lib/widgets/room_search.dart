@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:capi_small_mvp/debouncable.dart';
 import 'package:capi_small_mvp/model/capi_small.dart';
+import 'package:capi_small_mvp/model/room.dart';
 import 'package:capi_small_mvp/network/capi_client.dart';
 import 'package:capi_small_mvp/widgets/room_data.dart';
 import 'package:capi_small_mvp/widgets/room_selector.dart';

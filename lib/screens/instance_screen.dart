@@ -30,6 +30,22 @@ class _InstanceScreenState extends State<InstanceScreen> {
       ..showSnackBar(the);
   }
 
+  void _showSnackBarErrorMessage(Object ex) => _showSnackBarMessage(
+        SnackBar(
+          content: const Text('Unknown error.'),
+          action: SnackBarAction(
+            label: 'Details',
+            onPressed: () => showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Unknown error.'),
+                content: Text(ex.toString()),
+              ),
+            ),
+          ),
+        ),
+      );
+
   void _doCheckInstance() async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
 
@@ -54,21 +70,7 @@ class _InstanceScreenState extends State<InstanceScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (other) {
-      _showSnackBarMessage(
-        SnackBar(
-          content: const Text('Unknown error.'),
-          action: SnackBarAction(
-            label: 'Details',
-            onPressed: () => showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Unknown error.'),
-                content: Text(other.toString()),
-              ),
-            ),
-          ),
-        ),
-      );
+      _showSnackBarErrorMessage(other);
     }
 
     setState(() => _inProgress = false);

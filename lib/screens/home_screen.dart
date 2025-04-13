@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<CapiProfile> profile;
 
   static const double breakpoint = 700;
+  static const double leftPaneWidth = 300;
 
   void _logOut() {
     _client.forgetToken();
@@ -41,12 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _logOutInstance() {
     _client.forgetToken();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const InstanceScreen(),
-        ),
-      );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const InstanceScreen(),
+      ),
+    );
   }
 
   @override
@@ -87,7 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
         body: SafeArea(
           child: Row(
             children: [
-              if (twoPane) SizedBox(width: 250, child: roomSelectionPane()),
+              if (twoPane)
+                SizedBox(
+                  width: leftPaneWidth,
+                  child: roomSelectionPane(),
+                ),
               Expanded(child: roomContentPane()),
             ],
           ),
@@ -147,7 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget roomSelectionPane() {
     return const Column(
       children: [
-        RoomSearch(),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: RoomSearch(),
+        ),
         Expanded(child: RoomSelector()),
       ],
     );

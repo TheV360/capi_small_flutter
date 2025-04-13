@@ -2,6 +2,7 @@ import 'package:capi_small_mvp/csv_parser.dart';
 
 typedef CapiPageId = int;
 typedef CapiMessageId = int;
+typedef CapiUserId = int;
 
 class CapiSmallState {
   final bool edited;
@@ -9,6 +10,7 @@ class CapiSmallState {
   final bool publiclyViewable;
   final bool userCanPostInRoom;
   final bool userOwnsRoom;
+  final bool userIsRecipient;
 
   const CapiSmallState({
     required this.edited,
@@ -16,6 +18,7 @@ class CapiSmallState {
     required this.publiclyViewable,
     required this.userCanPostInRoom,
     required this.userOwnsRoom,
+    required this.userIsRecipient,
   });
 
   factory CapiSmallState.parse(String flags) => CapiSmallState(
@@ -24,16 +27,18 @@ class CapiSmallState {
         publiclyViewable: flags.contains('R'),
         userCanPostInRoom: flags.contains('P'),
         userOwnsRoom: flags.contains('O'),
+        userIsRecipient: flags.contains('U'),
       );
 
   @override
-  String toString() {
-    return '${edited ? 'E' : ''}'
-        '${deleted ? 'D' : ''}'
-        '${publiclyViewable ? 'R' : ''}'
-        '${userCanPostInRoom ? 'P' : ''}'
-        '${userOwnsRoom ? 'O' : ''}';
-  }
+  String toString() => [
+        if (edited) 'E',
+        if (deleted) 'D',
+        if (publiclyViewable) 'R',
+        if (userCanPostInRoom) 'P',
+        if (userOwnsRoom) 'O',
+        if (userIsRecipient) 'U',
+      ].join();
 }
 
 class CapiSmall {
@@ -44,7 +49,7 @@ class CapiSmall {
   final String module;
   final CapiSmallState state;
   final CapiPageId? pageId;
-  final int? userId;
+  final CapiUserId? userId;
   final CapiMessageId? messageId;
 
   const CapiSmall({

@@ -11,30 +11,30 @@ class RoomMessagesModel with ChangeNotifier {
   final List<CapiSmall> _messages = [];
   List<CapiSmall> get messages => _messages;
 
-  int? get lastMessageId => _messages.reversed
-      .where((msg) => msg.messageId != null)
-      .firstOrNull
-      ?.messageId;
+  // int? get lastMessageId => _messages.reversed
+  //     .where((msg) => msg.messageId != null)
+  //     .firstOrNull
+  //     ?.messageId;
 
   void addMessage(CapiSmall incoming) {
     if (incoming.messageId == null) return;
 
-    final msgId = incoming.messageId!;
-
-    // final insertIndex = _messages
-    //     .indexWhere((existing) => existing.messageId! > incoming.messageId!);
-    final index = findMessageWithClosestId(msgId);
-    if (index == null) {
-      final lowBound = _messages.firstOrNull?.messageId ?? 0;
-      final uppBound = _messages.lastOrNull?.messageId ?? 0;
-      // print("couldn't find best insert index"
-      //     " for $msgId in ($lowBound, $uppBound)");
+    final insertIndex = findIndexForInsert(incoming.messageId!);
+    if (insertIndex == _messages.length) {
+      if (incoming.state.deleted) return;
       _messages.add(incoming);
     } else {
-      final (insertIndex, message) = index;
+      final message = _messages[insertIndex];
       if (message.messageId! == incoming.messageId!) {
-        // handle edits
-        _messages[insertIndex] = incoming;
+        if (incoming.state.deleted) {
+          // not necessarily needed
+          _messages.removeAt(insertIndex);
+        } else if (incoming.state.edited) {
+          // handle edits
+          _messages[insertIndex] = incoming;
+        } else {
+          print("the dupe message warning!!! aaah!");
+        }
       } else {
         _messages.insert(insertIndex, incoming);
       }
@@ -49,24 +49,38 @@ class RoomMessagesModel with ChangeNotifier {
     if (newLength != oldLength) notifyListeners();
   }
 
-  (int, CapiSmall)? findMessageWithClosestId(int msgId) {
-    int bottomIndex = 0, topIndex = _messages.length;
+  /// Returns the index where you should insert, if this is a new message.
+  /// May return an index in [0, length], so don't just `messages[index]` it.
+  int findIndexForInsert(CapiMessageId messageId) {
+    if (_messages.isEmpty) return 0;
+
     assert(areMessagesSorted());
+
+    if (_messages.lastOrNull case CapiSmall last) {
+      if (messageId > last.messageId!) return _messages.length;
+      if (messageId == last.messageId!) return _messages.length - 1;
+    }
+
+    if (messageId <= _messages.firstOrNull!.messageId!) return 0;
+
+    int bottomIndex = 0, topIndex = _messages.length;
     while (bottomIndex < topIndex) {
       // it's binary search.
-      final int midIndex = (bottomIndex + topIndex) >> 1;
-      final midId = _messages[midIndex].messageId!;
-      if (msgId > midId) {
-        bottomIndex = midIndex + 1;
-      } else if (msgId < midId) {
-        topIndex = midIndex - 1;
+      final int middleIndex = (bottomIndex + topIndex) >> 1;
+      final middleId = _messages[middleIndex].messageId!;
+      if (messageId > middleId) {
+        bottomIndex = middleIndex + 1;
+      } else if (messageId < middleId) {
+        topIndex = middleIndex - 1;
       } else {
-        return (midIndex, _messages[midIndex]);
+        return middleIndex;
       }
     }
-    return null;
+
+    return _messages.length;
   }
 
+  // TODO: remove this, use "specialized" Message model type with un-nullable messageId field.
   bool areMessagesValid() => _messages.every((m) => m.messageId != null);
 
   bool areMessagesSorted() {
@@ -99,7 +113,7 @@ class RoomUserListModel with ChangeNotifier {
 }
 
 /// see [package:capi_small_mvp/widgets/room_selector.dart:7]
-class RoomData {
+class RoomData with ChangeNotifier {
   // TODO: turn this into a CapiSmall-like struct that only stores the fields we want
   // alternatively, we can always just use the "effective latest message" and show it to the user.
   CapiSmall info;
@@ -108,6 +122,11 @@ class RoomData {
   final RoomUserListModel userList = RoomUserListModel();
 
   RoomData(this.info);
+
+  void updateInfo(CapiSmall newInfo) {
+    info = newInfo;
+    notifyListeners();
+  }
 }
 
 class RoomsData with ChangeNotifier {
@@ -115,17 +134,17 @@ class RoomsData with ChangeNotifier {
   final Map<CapiPageId, RoomData> _rooms = {};
 
   RoomData? getRoomById(CapiPageId pageId) => _rooms[pageId];
+  get roomIdsList => _rooms.keys.toList();
 
   RoomData recognizeRoom(CapiSmall roomEntry) {
     final existingRoom = _rooms[roomEntry.pageId!];
     if (existingRoom == null) {
       final newRoom = RoomData(roomEntry);
       _rooms[roomEntry.pageId!] = newRoom;
-      notifyListeners();
+      notifyListeners(); // why?
       return newRoom;
     } else {
-      existingRoom.info = roomEntry;
-      notifyListeners();
+      existingRoom.updateInfo(roomEntry);
       return existingRoom;
     }
   }
@@ -142,10 +161,13 @@ class RoomsData with ChangeNotifier {
       default:
         RoomData roomData = recognizeRoom(small);
         switch (small.module) {
-          case '':
-            roomData.messages.addMessage(small);
+          case 'eventId':
+            print(small.message);
           case 'userlist':
+            print(small.message);
             roomData.userList.updateFromString(small.message);
+          default:
+            roomData.messages.addMessage(small);
         }
     }
   }
