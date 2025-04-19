@@ -146,7 +146,7 @@ class CapiClient {
   }) async {
     assert(roomIds.isNotEmpty);
     final query = {
-      if (roomIds.isNotEmpty) 'rooms': roomIds.join(','),
+      if (roomIds.isNotEmpty) 'rooms': roomIds.map((r) => r.toString()),
       'mid': '$lastMessageId',
       'get': '$messagesToGet',
     };
