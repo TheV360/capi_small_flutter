@@ -1,21 +1,22 @@
 import 'dart:async';
 
-const Duration debounceDuration = Duration(milliseconds: 300);
-
 typedef Debounceable<S, T> = Future<S?> Function(T parameter);
 
 /// Returns a new function that is a debounced version of the given function.
 ///
 /// This means that the original function will be called only after no calls
 /// have been made for the given Duration.
-Debounceable<S, T> debounce<S, T>(Debounceable<S?, T> function) {
+Debounceable<S, T> debounce<S, T>(
+  Debounceable<S?, T> function, {
+  Duration debounceDuration = const Duration(milliseconds: 300),
+}) {
   _DebounceTimer? debounceTimer;
 
   return (T parameter) async {
     if (debounceTimer != null && !debounceTimer!.isCompleted) {
       debounceTimer!.cancel();
     }
-    debounceTimer = _DebounceTimer();
+    debounceTimer = _DebounceTimer(debounceDuration);
     try {
       await debounceTimer!.future;
     } catch (error) {
@@ -30,7 +31,7 @@ Debounceable<S, T> debounce<S, T>(Debounceable<S?, T> function) {
 
 // A wrapper around Timer used for debouncing.
 class _DebounceTimer {
-  _DebounceTimer() {
+  _DebounceTimer(Duration debounceDuration) {
     _timer = Timer(debounceDuration, _onComplete);
   }
 
