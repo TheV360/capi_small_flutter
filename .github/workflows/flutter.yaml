@@ -34,7 +34,7 @@ jobs:
       
       - name: Build Android App APKs
         run: |
-          flutter build apk --release
+          flutter build apk --release --split-by-abi
           ls build/app/outputs/apk build/app/outputs/flutter-apk
       - name: Make Android App APKs Build Artifact (armeabi-v7a)
         uses: actions/upload-artifact@v4
