@@ -39,6 +39,7 @@ class _ComposeBoxState extends State<ComposeBox> {
   @override
   Widget build(BuildContext context) {
     return Consumer2<CapiClient, RoomSelection>(
+      // TODO: does this need to listen so closely to RoomSelection?!
       builder: (context, client, room, _) => Container(
         decoration:
             BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),

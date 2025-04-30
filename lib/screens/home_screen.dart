@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   UserList(users: roomData.userList.toList())),
           Expanded(
             child: RoomChat(
-              key: ValueKey(selectedRoom.id),
+              key: ValueKey('room${selectedRoom.id}'),
               room: selectedRoom,
             ),
           ),

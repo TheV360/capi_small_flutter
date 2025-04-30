@@ -54,6 +54,7 @@ class _RoomChatState extends State<RoomChat>
   /// "Joins the `AnimationController` to the `ScrollController`, providing ample
   /// time for the lazy list to render its contents while scrolling to the bottom."
   void _linkAnimationToScroll() {
+    if (!_scrollController.hasClients) return print('no clients?');
     _scrollController.jumpTo(
       _animationController.value * _scrollController.position.maxScrollExtent,
     );
@@ -64,6 +65,7 @@ class _RoomChatState extends State<RoomChat>
   ///
   /// ("bottom" is the max scroll extent seen in [_linkAnimationToScroll])"
   void scrollToEnd({ListEnd end = ListEnd.bottom}) {
+    if (!_scrollController.hasClients) return print('no clients? 2');
     _animationController.value = max(0, _scrollController.position.pixels) /
         max(1, _scrollController.position.maxScrollExtent);
     _animationController.fling(

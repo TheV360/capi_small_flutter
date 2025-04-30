@@ -19,7 +19,7 @@ class CapiClient {
   String? _tokenWithBearer;
 
   CapiInstanceStatus? instanceStatus;
-  CapiPageId? tempRoomId;
+  List<CapiPageId>? tempRoomId;
 
   bool isLoggedIn() => _tokenWithBearer != null;
   String getPathToImage(String hash) =>
@@ -157,6 +157,7 @@ class CapiClient {
       final body = utf8.decode(response.bodyBytes, allowMalformed: true);
       return CapiSmall.fromCsv(body);
     } else {
+      print('${response.statusCode} ${response.body}');
       throw Exception("too lazy to figure out errors yet");
     }
   }

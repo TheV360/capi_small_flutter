@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
+import 'package:capi_small_mvp/model/capi_small.dart';
 import 'package:capi_small_mvp/model/capi_instance_status.dart';
 import 'package:capi_small_mvp/network/capi_client.dart';
 import 'package:capi_small_mvp/widgets/instance_status.dart';
@@ -46,6 +47,13 @@ class _InstanceScreenState extends State<InstanceScreen> {
         ),
       );
 
+  static List<CapiPageId> parseRoomIdList(String roomIds) => roomIds
+      .split(',')
+      .map((r) => int.tryParse(r))
+      .whereType<int>()
+      .toSet()
+      .toList();
+
   void _doCheckInstance() async {
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
 
@@ -55,13 +63,14 @@ class _InstanceScreenState extends State<InstanceScreen> {
 
     // todo: distinguish without/with `/api`
     final instanceUri = instanceUriController.text;
-    final tempRoomId = int.tryParse(tempRoomIdController.text);
+
+    final tempRoomIds = tempRoomIdController.text;
 
     try {
       final parsedInstanceUri = Uri.parse(instanceUri);
       final client = context.read<CapiClient>();
       await client.fetchAndSaveInstanceStatus(parsedInstanceUri);
-      client.tempRoomId = tempRoomId;
+      client.tempRoomId = parseRoomIdList(tempRoomIds);
 
       if (!mounted) return;
 
@@ -165,9 +174,9 @@ class _InstanceScreenState extends State<InstanceScreen> {
               if (value == null || value.isEmpty) {
                 return 'if u dont enter a room id then u will pass away.';
               }
-              final parsed = int.tryParse(value);
-              if (parsed == null) {
-                return 'you gotta enter a number kinda thing.';
+              final parsed = parseRoomIdList(value);
+              if (parsed.isEmpty) {
+                return 'you gotta enter a number list kinda thing.';
               }
               return null;
             },

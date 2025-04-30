@@ -176,8 +176,8 @@ class RoomsData with ChangeNotifier {
     print("waking up!");
 
     // TODO: replace tempRoomId
-    final roomIds = [if (client.tempRoomId != null) client.tempRoomId!];
-    final commandStream = client.fetchAndStreamChat(roomIds: roomIds);
+    // final roomIds = [if (client.tempRoomId != null) client.tempRoomId!];
+    final commandStream = client.fetchAndStreamChat(roomIds: client.tempRoomId ?? []);
     commandStream.listen(
       (d) => doCommand(d),
       onError: (e) => print(e),

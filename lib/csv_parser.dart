@@ -1,9 +1,13 @@
-const rowSeparator = '\n';
+const rowSeparator = '\r\n';
 const fieldSeparator = ',';
 
 bool quotesAreBalanced(String text) => '"'.allMatches(text).length.isEven;
 
-List<List<String>> parseCsv(String text) {
+List<List<String>> parseCsv(
+  String text, {
+  String rowSeparator = '\r\n',
+  String fieldSeparator = ',',
+}) {
   final needToRepair = text.contains('"');
   var rows = text
       .split(rowSeparator)

@@ -4,14 +4,16 @@ import 'package:capi_small_mvp/model/capi_small.dart';
 import 'package:capi_small_mvp/csv_parser.dart';
 
 void main() {
+  List<List<String>> csv(String i) =>
+      parseCsv(i, fieldSeparator: ',', rowSeparator: '\n');
   group('Testing CSV Parser', () {
     test('Basics', () {
       {
-        final r = parseCsv('\n');
+        final r = csv('\n');
         expect(r.isEmpty, true, reason: 'zero-field rows do not exist');
       }
       {
-        final [r1, r2] = parseCsv('a,b,c\n"a","b","c"');
+        final [r1, r2] = csv('a,b,c\n"a","b","c"');
         expect(r1.length, 3);
         expect(r2.length, 3);
         expect(r1, r2,
@@ -19,7 +21,7 @@ void main() {
       }
     });
     test('Not Basics', () {
-      final texts = parseCsv(r'''
+      final texts = csv(r'''
 Home,braixen,"well, now i'm here",2024-06-30T22:41:01.245Z,,RP,1,2,1
 Home,braixen,"and yet
 i don't feel like much
