@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:capi_small_mvp/widgets/divider_text.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -30,6 +31,8 @@ class _RoomChatState extends State<RoomChat>
     duration: const Duration(milliseconds: 1),
   );
   final ScrollController _scrollController = ScrollController();
+
+  final UniqueKey _center = UniqueKey();
 
   late final RoomMessagesModel model;
 
@@ -77,31 +80,72 @@ class _RoomChatState extends State<RoomChat>
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: model,
-      builder: (context, child) => ListView.builder(
-        // reverse: true,
-        controller: _scrollController,
-        itemCount: model.messages.length,
-        itemBuilder: (context, index) => (index < model.messages.length)
-            ? ChatMessage(
-                key: ValueKey(model
-                    .messages[/*(model.messages.length - 1) - */ index]
-                    .messageId),
-                inner: model.messages[/*(model.messages.length - 1) - */ index],
-                // onTap: () => scrollToEnd(end: ListEnd.bottom)
-                onTap: () => showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                            content: Text(model.messages[index].toString()),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('All Good'),
-                              )
-                            ])),
-              )
-            : null,
+    return CustomScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.vertical,
+      center: _center,
+      anchor: 1.0,
+      // reverse: true,
+      slivers: <Widget>[
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 16.0,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonal(
+                onPressed: () {},
+                child: const Text('Load older messages'),
+              ),
+            ),
+          ),
+        ),
+        ListenableBuilder(
+          listenable: model,
+          builder: (context, _) => buildMessageList(context),
+        ),
+        SliverToBoxAdapter(
+          key: _center,
+          child: const DividerText(label: "something"),
+        ),
+      ],
+    );
+  }
+
+  Widget buildMessageList(BuildContext context) {
+    return SliverList.builder(
+      // TODO: convert this to use slivers, and add a button for loading more messages from a pivot point.
+      // see example in https://api.flutter.dev/flutter/widgets/ScrollView/anchor.html
+      itemCount: model.messages.length,
+      itemBuilder: (context, index) {
+        final revIndex = (model.messages.length - 1) - index;
+        final message = model.messages.elementAtOrNull(revIndex);
+        if (message == null) {
+          print("wtf? $index of [0,${model.messages.length})");
+          return null;
+        }
+        return ChatMessage(
+          key: ValueKey('message${message.messageId}'),
+          inner: message,
+          onTap: () => showMessageInfoDialog(context, message),
+        );
+      },
+    );
+  }
+
+  static void showMessageInfoDialog(BuildContext context, CapiSmall message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(message.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('All Good'),
+          )
+        ],
       ),
     );
   }

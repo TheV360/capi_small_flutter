@@ -213,5 +213,6 @@ class CapiClient {
     if (response.statusCode != 200) throw Exception();
 
     print(response);
+    print(response.body.replaceAll('\n', '\\n').replaceAll('\r', '\\r'));
   }
 }

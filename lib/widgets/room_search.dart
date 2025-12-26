@@ -56,7 +56,7 @@ class _RoomSearchState extends State<RoomSearch> {
           final freshResults = await _debouncedSearch(controller.text);
           _lastResults = freshResults ?? _lastResults;
           return _lastResults
-              .map((small) => (small: small, room: Room.fromSmall(small)))
+              .map((small) => (small: small, room: Room(small)))
               .map((out) => ListTile(
                     leading: out.room.getRoomIcon(),
                     title: Text(out.room.name.isNotEmpty

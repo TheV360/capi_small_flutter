@@ -101,4 +101,11 @@ class CapiSmall {
         ' at $postedAt ($messageId)'
         ' says: $message';
   }
+
+  bool isPageShaped() => pageId != null;
+  bool isMessageShaped() =>
+      (messageId != null) &&
+      (pageId != null) &&
+      (userId != null) &&
+      (postedAt != null);
 }

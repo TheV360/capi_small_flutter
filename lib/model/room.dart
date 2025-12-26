@@ -3,24 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:capi_small_mvp/model/capi_small.dart';
 
 class Room {
-  final CapiPageId id;
-  final String name;
-  final bool isPublic;
-  final bool isReadOnly;
+  final CapiSmall inner;
 
-  const Room({
-    required this.id,
-    required this.name,
-    required this.isPublic,
-    required this.isReadOnly,
-  });
+  CapiPageId get id => inner.pageId!;
+  String get name => inner.pageName;
+  bool get isPublic => inner.state.publiclyViewable;
+  bool get isReadOnly => !inner.state.userCanPostInRoom;
 
-  factory Room.fromSmall(CapiSmall small) => Room(
-        id: small.pageId!,
-        name: small.pageName,
-        isPublic: small.state.publiclyViewable,
-        isReadOnly: !small.state.userCanPostInRoom,
-      );
+  const Room(this.inner);
 
   Icon getRoomIcon() => switch ((isPublic, isReadOnly)) {
         (_, true) => const Icon(Icons.newspaper),

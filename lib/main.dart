@@ -22,6 +22,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     // https://api.flutter.dev/flutter/widgets/Navigator-class.html
+    final seedColor = Colors.amber;
     return Provider<CapiClient>(
       create: (_) => CapiClient(),
       dispose: (_, value) => value.dispose(),
@@ -30,14 +31,14 @@ class _MainAppState extends State<MainApp> {
         title: HomeScreen.appName,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.lime,
+            seedColor: seedColor,
             brightness: Brightness.light,
           ),
           useMaterial3: true,
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.lime,
+            seedColor: seedColor,
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
